@@ -1,4 +1,5 @@
 #include "mthd.h"
+#include "util.h"
 
 #include <memory.h>
 #include <stdlib.h>
@@ -12,6 +13,7 @@ mthd_t *mthd_new()
     }
     ctx->length = 0;
     ctx->format = MTHD_SINGLE_TRACK;
+    ctx->track_count = 0;
     ctx->ppqn = 0;
     return ctx;
 }
@@ -25,7 +27,7 @@ void mthd_free(mthd_t *ctx)
     free(ctx);
 }
 
-bool mthd_unmarshal(mthd_t *ctx, uint8_t *data, const uint32_t size)
+int mthd_unmarshal(mthd_t *ctx, uint8_t *data, const uint32_t size)
 {
     uint32_t iterator = 0;
     for (uint8_t i = 0; i < MTHD_MARKER_SIZE; i++)
@@ -34,8 +36,13 @@ bool mthd_unmarshal(mthd_t *ctx, uint8_t *data, const uint32_t size)
     }
     if (memcmp(ctx->mthd, mthd_header_reference, MTHD_MARKER_SIZE))
     {
-        return false;
+        return -1;
     }
 
-    return true;
+    ctx->length = readu32bswap(data, &iterator);
+    ctx->format = readu16bswap(data, &iterator);
+    ctx->track_count = readu16bswap(data, &iterator);
+    ctx->ppqn = readu16bswap(data, &iterator);
+
+    return iterator;
 }

@@ -3,10 +3,9 @@
 
 #include "protocol.h"
 
-#include <stdbool.h>
 #include <stdint.h>
 
-typedef enum uint16_t
+typedef enum mthd_format
 {
     MTHD_SINGLE_TRACK = 0x00,
     MTHD_MULTI_TRACK,
@@ -17,7 +16,8 @@ typedef struct _mthd
 {
     char mthd[MTHD_MARKER_SIZE];
     uint32_t length;
-    mthd_format_e format;
+    uint16_t format;
+    uint16_t track_count;
     uint16_t ppqn;
 } mthd_t;
 
@@ -27,7 +27,7 @@ extern "C" {
 
 mthd_t *mthd_new();
 void mthd_free(mthd_t *ctx);
-bool mthd_unmarshal(mthd_t *ctx, uint8_t *data, const uint32_t size);
+int mthd_unmarshal(mthd_t *ctx, uint8_t *data, const uint32_t size);
 
 #ifdef __cplusplus
 }

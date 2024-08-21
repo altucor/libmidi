@@ -3,7 +3,6 @@
 
 #include "protocol.h"
 
-#include <stdbool.h>
 #include <stdint.h>
 
 typedef struct midi_event
@@ -19,7 +18,7 @@ extern "C" {
 
 midi_event_t *midi_event_new();
 void midi_event_free(midi_event_t *ctx);
-bool midi_event_unmarshal(midi_event_t *ctx, uint8_t *data, const uint32_t size);
+int midi_event_unmarshal(midi_event_t *ctx, uint8_t *data, const uint32_t size);
 
 #ifdef __cplusplus
 }

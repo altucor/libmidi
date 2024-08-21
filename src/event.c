@@ -27,7 +27,7 @@ void midi_event_parse_note(uint8_t *data, const uint32_t size)
 {
 }
 
-bool midi_event_unmarshal(midi_event_t *ctx, uint8_t *data, const uint32_t size)
+int midi_event_unmarshal(midi_event_t *ctx, uint8_t *data, const uint32_t size)
 {
     uint32_t iterator = 0;
     uint8_t b = data[iterator++];
@@ -53,5 +53,5 @@ bool midi_event_unmarshal(midi_event_t *ctx, uint8_t *data, const uint32_t size)
     default:
         break;
     }
-    return false;
+    return iterator;
 }

@@ -16,7 +16,7 @@ extern "C" {
 
 midi_file_t *midi_file_new();
 void midi_file_free(midi_file_t *ctx);
-bool midi_file_unmarshal(midi_file_t *ctx, uint8_t *data, const uint32_t size);
+int midi_file_unmarshal(midi_file_t *ctx, uint8_t *data, const uint32_t size);
 
 #ifdef __cplusplus
 }

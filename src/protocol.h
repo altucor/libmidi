@@ -8,8 +8,8 @@
 #define MTHD_MARKER_SIZE (4)
 #define MTRK_MARKER_SIZE (4)
 
-const char *mthd_header_reference = "MThd";
-const char *mtrk_header_reference = "MTrk";
+const static char *mthd_header_reference = "MThd";
+const static char *mtrk_header_reference = "MTrk";
 
 typedef enum midi_status
 {
