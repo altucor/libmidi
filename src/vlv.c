@@ -24,13 +24,19 @@ void vlv_free(vlv_t *ctx)
     free(ctx);
 }
 
-int vlv_unmarshal(vlv_t *ctx, uint8_t *data, const uint32_t size)
+int vlv_unmarshal(vlv_t *ctx, uint8_t *data, uint32_t size)
 {
     uint32_t iterator = 0;
 
     while (1)
     {
+        if (size == 0)
+        {
+            return -1;
+        }
         uint8_t b = data[iterator++];
+        size--;
+
         ctx->val += (b & MIDI_VLV_DATA_MASK);
         if (b & MIDI_VLV_CONTINUATION_BIT)
         {

@@ -23,7 +23,7 @@ extern "C" {
 
 midi_event_t *midi_event_new();
 void midi_event_free(midi_event_t *ctx);
-int midi_event_unmarshal(midi_event_t *ctx, uint8_t *data, const uint32_t size);
+int midi_event_unmarshal(midi_event_t *ctx, uint8_t *data, uint32_t size);
 bool midi_event_is_system(midi_event_t *ctx);
 bool midi_event_is_note(midi_event_t *ctx);
 

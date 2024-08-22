@@ -30,8 +30,9 @@ void midi_event_free(midi_event_t *ctx)
     free(ctx);
 }
 
-int midi_event_unmarshal_system(midi_event_t *ctx, uint8_t *data, const uint32_t size)
+int midi_event_unmarshal_system(midi_event_t *ctx, uint8_t *data, uint32_t size)
 {
+    int res = 0;
     uint32_t iterator = 0;
     switch (ctx->cmd.subCmd)
     {
@@ -40,8 +41,13 @@ int midi_event_unmarshal_system(midi_event_t *ctx, uint8_t *data, const uint32_t
         {
             uint8_t b = 0;
             b = data[iterator++];
+            size--;
             while (!is_sysex_end_byte(b))
             {
+                if (size == 0)
+                {
+                    return -1;
+                }
                 if (ctx->data == NULL)
                 {
                     ctx->data = malloc(1);
@@ -53,6 +59,8 @@ int midi_event_unmarshal_system(midi_event_t *ctx, uint8_t *data, const uint32_t
                     ctx->data = realloc(ctx->data, ctx->size);
                 }
                 ctx->data[ctx->size - 1] = b;
+                b = data[iterator++];
+                size--;
             }
         }
         break;
@@ -60,11 +68,13 @@ int midi_event_unmarshal_system(midi_event_t *ctx, uint8_t *data, const uint32_t
         // 2 bytes payload
         alloc_and_copy_from_stream(ctx->data, data, 2, &iterator);
         ctx->size = 2;
+        size -= 2;
         break;
     case MIDI_STATUS_SYSTEM_SONG_SELECT:
         // 1 byte payload
         alloc_and_copy_from_stream(ctx->data, data, 1, &iterator);
         ctx->size = 1;
+        size -= 1;
         break;
     case MIDI_STATUS_SYSTEM_RESET_OR_META: {
         midi_event_meta_reset(&ctx->meta);
@@ -79,11 +89,16 @@ int midi_event_unmarshal_system(midi_event_t *ctx, uint8_t *data, const uint32_t
     return iterator;
 }
 
-int midi_event_unmarshal(midi_event_t *ctx, uint8_t *data, const uint32_t size)
+int midi_event_unmarshal(midi_event_t *ctx, uint8_t *data, uint32_t size)
 {
     int res = 0;
     uint32_t iterator = 0;
-    iterator += vlv_unmarshal(&ctx->predelay, data + iterator, size);
+    if (res = vlv_unmarshal(&ctx->predelay, data + iterator, size), res < 0)
+    {
+        return -1;
+    }
+    iterator += res;
+    size -= res;
 
     (*(uint8_t *)&ctx->cmd) = data[iterator++];
     if (!(ctx->cmd.status & MIDI_NEW_MESSAGE_4BIT_MASK))
@@ -104,12 +119,14 @@ int midi_event_unmarshal(midi_event_t *ctx, uint8_t *data, const uint32_t size)
         // 2 bytes of payload
         alloc_and_copy_from_stream(ctx->data, data, 2, &iterator);
         ctx->size = 2;
+        size -= 2;
         break;
     case MIDI_STATUS_PROGRAM_CHANGE:
     case MIDI_STATUS_CHANNEL_PRESSURE:
         // 1 bytes of payload
         alloc_and_copy_from_stream(ctx->data, data, 1, &iterator);
         ctx->size = 1;
+        size -= 1;
         break;
     case MIDI_STATUS_SYSTEM: {
         if (res = midi_event_unmarshal_system(ctx, data + iterator, size), res < 0)
@@ -117,6 +134,7 @@ int midi_event_unmarshal(midi_event_t *ctx, uint8_t *data, const uint32_t size)
             return -1;
         }
         iterator += res;
+        size -= res;
         break;
     }
     default:

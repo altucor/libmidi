@@ -37,16 +37,22 @@ int mtrk_debug(mtrk_t *ctx, char *data, uint32_t size)
     return sprintf(data, mtrk_debug_fmt, ctx->mtrk, ctx->size, ctx->events_count);
 }
 
-int mtrk_unmarshal(mtrk_t *ctx, uint8_t *data, const uint32_t size)
+int mtrk_unmarshal(mtrk_t *ctx, uint8_t *data, uint32_t size)
 {
+    if (size < sizeof(ctx->mtrk) + sizeof(ctx->size))
+    {
+        return -1;
+    }
     int res = 0;
     uint32_t iterator = 0;
     (*(uint32_t *)&ctx->mtrk) = readu32(data, &iterator);
+    size -= sizeof(uint32_t);
     if (memcmp(ctx->mtrk, mtrk_header_reference, MTRK_MARKER_SIZE))
     {
         return -1;
     }
     ctx->size = readu32bswap(data, &iterator);
+    size -= sizeof(uint32_t);
 
     if (ctx->size > size)
     {
@@ -66,6 +72,7 @@ int mtrk_unmarshal(mtrk_t *ctx, uint8_t *data, const uint32_t size)
             return -1;
         }
         iterator += res;
+        size -= res;
 
         if (ctx->events_count == 0)
         {

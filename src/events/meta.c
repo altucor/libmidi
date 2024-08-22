@@ -1,5 +1,7 @@
 #include "meta.h"
 
+#include "util.h"
+
 #include "memory.h"
 #include "stdlib.h"
 
@@ -33,17 +35,25 @@ void midi_event_meta_free(midi_event_meta_t *ctx)
     free(ctx);
 }
 
-int midi_event_meta_unmarshal(midi_event_meta_t *ctx, uint8_t *data, const uint32_t size)
+int midi_event_meta_unmarshal(midi_event_meta_t *ctx, uint8_t *data, uint32_t size)
 {
+    int res = 0;
     uint32_t iterator = 0;
     (*(uint8_t *)&ctx->type) = data[iterator++];
-    iterator += vlv_unmarshal(&ctx->length, data + iterator, size);
+    if (res = vlv_unmarshal(&ctx->length, data + iterator, size), res < 0)
+    {
+        return -1;
+    }
+    iterator += res;
+    size -= res;
 
     if (ctx->length.val > 0)
     {
-        ctx->data = calloc(ctx->length.val, sizeof(uint8_t));
-        memcpy(ctx->data, data + iterator, ctx->length.val);
-        iterator += ctx->length.val;
+        // ctx->data = calloc(ctx->length.val, sizeof(uint8_t));
+        // memcpy(ctx->data, data + iterator, ctx->length.val);
+        // iterator += ctx->length.val;
+        alloc_and_copy_from_stream(ctx->data, data, ctx->length.val, &iterator);
+        size -= ctx->length.val;
     }
 
     switch (ctx->type)

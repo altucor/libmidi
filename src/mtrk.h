@@ -13,7 +13,6 @@ typedef struct _mtrk
     char mtrk[MTRK_MARKER_SIZE];
     uint32_t size;
     uint32_t events_count;
-    // vlv_t predelay;
     midi_event_t **events;
 } mtrk_t;
 
@@ -24,7 +23,7 @@ extern "C" {
 mtrk_t *mtrk_new();
 void mtrk_free(mtrk_t *ctx);
 int mtrk_debug(mtrk_t *ctx, char *data, uint32_t size);
-int mtrk_unmarshal(mtrk_t *ctx, uint8_t *data, const uint32_t size);
+int mtrk_unmarshal(mtrk_t *ctx, uint8_t *data, uint32_t size);
 
 #ifdef __cplusplus
 }

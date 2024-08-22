@@ -36,6 +36,11 @@ int mthd_debug(mthd_t *ctx, char *data, uint32_t size)
 
 int mthd_unmarshal(mthd_t *ctx, uint8_t *data, const uint32_t size)
 {
+    if (size < sizeof(mthd_t))
+    {
+        return -1;
+    }
+
     uint32_t iterator = 0;
     (*(uint32_t *)&ctx->mthd) = readu32(data, &iterator);
     if (memcmp(ctx->mthd, mthd_header_reference, MTHD_MARKER_SIZE))
