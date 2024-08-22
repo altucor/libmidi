@@ -7,7 +7,7 @@
 typedef struct midi_file
 {
     mthd_t mthd;
-    mtrk_t *mtrk;
+    mtrk_t **mtrk;
 } midi_file_t;
 
 #ifdef __cplusplus
@@ -16,6 +16,7 @@ extern "C" {
 
 midi_file_t *midi_file_new();
 void midi_file_free(midi_file_t *ctx);
+int midi_file_debug(midi_file_t *ctx, char *data, uint32_t size);
 int midi_file_unmarshal(midi_file_t *ctx, uint8_t *data, const uint32_t size);
 
 #ifdef __cplusplus

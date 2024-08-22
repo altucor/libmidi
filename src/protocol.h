@@ -1,9 +1,16 @@
 #ifndef MIDI_PROTOCOL_H
 #define MIDI_PROTOCOL_H
 
-#define MIDI_STATUS_MESSAGE_CMD_MASK 0x07
-#define MIDI_STATUS_MESSAGE_CHANNEL_MASK 0x0F
-#define MIDI_NEW_MESSAGE 0x80
+#include <stdint.h>
+
+#define MIDI_STATUS_MESSAGE_CMD_MASK (0x07)
+#define MIDI_STATUS_MESSAGE_CHANNEL_MASK (0x0F)
+#define MIDI_NEW_MESSAGE_BYTE_MASK (0x80)
+#define MIDI_NEW_MESSAGE_4BIT_MASK (0x08)
+
+#define MIDI_VLV_CONTINUATION_BIT (0x80)
+#define MIDI_VLV_DATA_MASK (0x7F)
+#define MIDI_VLV_MAX_SIZE (sizeof(uint32_t))
 
 #define MTHD_MARKER_SIZE (4)
 #define MTRK_MARKER_SIZE (4)
@@ -40,7 +47,7 @@ typedef enum midi_status_system
     MIDI_STATUS_SYSTEM_STOP_SONG,
     MIDI_STATUS_SYSTEM_RESERVED_13,
     MIDI_STATUS_SYSTEM_ACTIVE_SENSING,
-    MIDI_STATUS_SYSTEM_SYSTEM_RESET,
+    MIDI_STATUS_SYSTEM_RESET_OR_META,
 } midi_status_system_e;
 
 typedef enum midi_meta_event
@@ -64,5 +71,11 @@ typedef enum midi_meta_event
     MIDI_META_EVENT_KEY_SIGNATURE = 0x59,
     MIDI_META_EVENT_PROPRIETARY_EVENT = 0x7F,
 } midi_meta_event_e;
+
+typedef struct midi_cmd
+{
+    uint8_t status : 4;
+    uint8_t subCmd : 4;
+} midi_cmd_t;
 
 #endif // MIDI_PROTOCOL_H

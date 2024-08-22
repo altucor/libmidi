@@ -27,6 +27,7 @@ extern "C" {
 
 mthd_t *mthd_new();
 void mthd_free(mthd_t *ctx);
+int mthd_debug(mthd_t *ctx, char *data, uint32_t size);
 int mthd_unmarshal(mthd_t *ctx, uint8_t *data, const uint32_t size);
 
 #ifdef __cplusplus

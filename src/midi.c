@@ -156,7 +156,7 @@ void midi_read_payload(midi_t *ctx, uint8_t b)
 
 void midi_feed(midi_t *ctx, uint8_t b)
 {
-    if ((MIDI_NEW_MESSAGE | (MIDI_STATUS_SYSTEM << 4) | MIDI_STATUS_SYSTEM_ACTIVE_SENSING) == b)
+    if ((MIDI_NEW_MESSAGE_BYTE_MASK | (MIDI_STATUS_SYSTEM << 4) | MIDI_STATUS_SYSTEM_ACTIVE_SENSING) == b)
     {
         // printf("ping ignore 0x%02X\n", (MIDI_NEW_MESSAGE | (MIDI_STATUS_SYSTEM << 4) | MIDI_STATUS_SYSTEM_ACTIVE_SENSING));
         // printf("LOL midi state: %d midi status: %d index: %d size: %d\n", ctx->state, ctx->midi_status, ctx->payload_index,
@@ -164,7 +164,7 @@ void midi_feed(midi_t *ctx, uint8_t b)
         return;
     }
     // printf("MIDI Processing Byte: 0x%02X\n", b);
-    if ((b & MIDI_NEW_MESSAGE) == MIDI_NEW_MESSAGE)
+    if ((b & MIDI_NEW_MESSAGE_BYTE_MASK) == MIDI_NEW_MESSAGE_BYTE_MASK)
     {
         ctx->state = MIDI_STATE_NEW_STATUS;
     }
