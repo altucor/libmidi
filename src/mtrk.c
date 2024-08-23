@@ -85,6 +85,11 @@ int mtrk_unmarshal(mtrk_t *ctx, uint8_t *data, uint32_t size)
 
         ctx->events[ctx->events_count] = event;
         ctx->events_count++;
+
+        if (midi_event_is_system(event) && midi_event_meta_is_track_end(&event->meta))
+        {
+            break;
+        }
     }
 
     return iterator;

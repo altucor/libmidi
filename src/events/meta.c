@@ -99,3 +99,8 @@ int midi_event_meta_unmarshal(midi_event_meta_t *ctx, uint8_t *data, uint32_t si
     }
     return iterator;
 }
+
+bool midi_event_meta_is_track_end(midi_event_meta_t *ctx)
+{
+    return ctx->type == MIDI_META_EVENT_TRACK_END;
+}

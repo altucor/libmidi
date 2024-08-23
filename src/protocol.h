@@ -74,8 +74,8 @@ typedef enum midi_meta_event
 
 typedef struct midi_cmd
 {
-    uint8_t status : 4;
     uint8_t subCmd : 4;
+    uint8_t status : 4;
 } midi_cmd_t;
 
 #endif // MIDI_PROTOCOL_H
