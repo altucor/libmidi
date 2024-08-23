@@ -66,19 +66,30 @@ int midi_event_unmarshal_system(midi_event_t *ctx, uint8_t *data, uint32_t size)
         break;
     case MIDI_STATUS_SYSTEM_SONG_POSITION:
         // 2 bytes payload
-        alloc_and_copy_from_stream(ctx->data, data, 2, &iterator);
+        alloc_and_copy_from_stream(&ctx->data, data, 2, &iterator);
         ctx->size = 2;
         size -= 2;
         break;
     case MIDI_STATUS_SYSTEM_SONG_SELECT:
         // 1 byte payload
-        alloc_and_copy_from_stream(ctx->data, data, 1, &iterator);
+        alloc_and_copy_from_stream(&ctx->data, data, 1, &iterator);
         ctx->size = 1;
         size -= 1;
         break;
     case MIDI_STATUS_SYSTEM_RESET_OR_META: {
         midi_event_meta_reset(&ctx->meta);
-        iterator += midi_event_meta_unmarshal(&ctx->meta, data + iterator, size);
+        if (res = midi_event_meta_unmarshal(&ctx->meta, data + iterator, size), res < 0)
+        {
+            return -1;
+        }
+        iterator += res;
+        size -= res;
+
+        if (ctx->meta.length.val > 0)
+        {
+            alloc_and_copy_from_stream(&ctx->data, data, ctx->meta.length.val, &iterator);
+            size -= ctx->meta.length.val;
+        }
     }
     break;
 
@@ -100,7 +111,8 @@ int midi_event_unmarshal(midi_event_t *ctx, uint8_t *data, uint32_t size)
     iterator += res;
     size -= res;
 
-    (*(uint8_t *)&ctx->cmd) = data[iterator++];
+    uint8_t cmdByte = data[iterator++];
+    (*(uint8_t *)&ctx->cmd) = cmdByte;
     if (!(ctx->cmd.status & MIDI_NEW_MESSAGE_4BIT_MASK))
     {
         return -1;
@@ -113,19 +125,17 @@ int midi_event_unmarshal(midi_event_t *ctx, uint8_t *data, uint32_t size)
     case MIDI_STATUS_NOTE_ON:
     case MIDI_STATUS_KEY_PRESSURE:
     case MIDI_STATUS_CONTROLLER_CHANGE:
-        // exclusive handling 1-2 bytes
-        // http://www33146ue.sakura.ne.jp/staff/iz/formats/midi-cntl.html
     case MIDI_STATUS_PITCH_BEND:
         // 2 bytes of payload
-        alloc_and_copy_from_stream(ctx->data, data, 2, &iterator);
-        ctx->size = 2;
+        alloc_and_copy_from_stream_with_cmd(&ctx->data, cmdByte, data, 2, &iterator);
+        ctx->size = 3;
         size -= 2;
         break;
     case MIDI_STATUS_PROGRAM_CHANGE:
     case MIDI_STATUS_CHANNEL_PRESSURE:
         // 1 bytes of payload
-        alloc_and_copy_from_stream(ctx->data, data, 1, &iterator);
-        ctx->size = 1;
+        alloc_and_copy_from_stream_with_cmd(&ctx->data, cmdByte, data, 1, &iterator);
+        ctx->size = 2;
         size -= 1;
         break;
     case MIDI_STATUS_SYSTEM: {

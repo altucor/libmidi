@@ -1,11 +1,13 @@
 #ifndef MIDI_FILE_H
 #define MIDI_FILE_H
 
+#include "input_state_machine.h"
 #include "mthd.h"
 #include "mtrk.h"
 
 typedef struct midi_file
 {
+    input_state_machine_t *state_machine;
     mthd_t mthd;
     mtrk_t **mtrk;
 } midi_file_t;

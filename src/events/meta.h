@@ -11,7 +11,6 @@ typedef struct midi_event_meta
 {
     uint8_t type;
     vlv_t length;
-    uint8_t *data;
 } midi_event_meta_t;
 
 void midi_event_meta_reset(midi_event_meta_t *ctx);

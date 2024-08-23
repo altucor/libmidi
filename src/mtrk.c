@@ -5,9 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-mtrk_t *mtrk_new()
+mtrk_t *mtrk_new(input_state_machine_t *state_machine)
 {
     mtrk_t *ctx = calloc(1, sizeof(mtrk_t));
+    ctx->state_machine = state_machine;
+    input_state_machine_reset(ctx->state_machine);
     for (uint8_t i = 0; i < MTRK_MARKER_SIZE; i++)
     {
         ctx->mtrk[i] = 0;
@@ -26,7 +28,13 @@ void mtrk_free(mtrk_t *ctx)
     }
     if (ctx->events != NULL)
     {
+        for (uint32_t i = 0; i < ctx->events_count; i++)
+        {
+            midi_event_free(ctx->events[i]);
+        }
         free(ctx->events);
+        ctx->events = NULL;
+        ctx->events_count = 0;
     }
     free(ctx);
 }
@@ -65,31 +73,34 @@ int mtrk_unmarshal(mtrk_t *ctx, uint8_t *data, uint32_t size)
         {
             break;
         }
-        midi_event_t *event = midi_event_new();
-        if (res = midi_event_unmarshal(event, data + iterator, size), res < 0)
-        {
-            midi_event_free(event);
-            return -1;
-        }
-        iterator += res;
-        size -= res;
+        input_state_machine_feed(ctx->state_machine, data[iterator]);
+        iterator++;
+        size--;
+        // midi_event_t *event = midi_event_new();
+        // if (res = midi_event_unmarshal(event, data + iterator, size), res < 0)
+        // {
+        //     midi_event_free(event);
+        //     return -1;
+        // }
+        // iterator += res;
+        // size -= res;
 
-        if (ctx->events_count == 0)
-        {
-            ctx->events = calloc(1, sizeof(midi_event_t));
-        }
-        else
-        {
-            ctx->events = realloc(ctx->events, sizeof(midi_event_t) * ctx->events_count + 1);
-        }
+        // if (ctx->events_count == 0)
+        // {
+        //     ctx->events = calloc(1, sizeof(midi_event_t));
+        // }
+        // else
+        // {
+        //     ctx->events = realloc(ctx->events, sizeof(midi_event_t) * ctx->events_count + 1);
+        // }
 
-        ctx->events[ctx->events_count] = event;
-        ctx->events_count++;
+        // ctx->events[ctx->events_count] = event;
+        // ctx->events_count++;
 
-        if (midi_event_is_system(event) && midi_event_meta_is_track_end(&event->meta))
-        {
-            break;
-        }
+        // if (midi_event_is_system(event) && midi_event_meta_is_track_end(&event->meta))
+        // {
+        //     break;
+        // }
     }
 
     return iterator;

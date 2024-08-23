@@ -13,8 +13,8 @@ typedef struct midi_event
     vlv_t predelay;
     midi_cmd_t cmd;
     uint32_t size;
-    uint8_t *data;
     midi_event_meta_t meta;
+    uint8_t *data;
 } midi_event_t;
 
 #ifdef __cplusplus

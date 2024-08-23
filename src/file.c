@@ -6,6 +6,7 @@
 midi_file_t *midi_file_new()
 {
     midi_file_t *ctx = calloc(1, sizeof(midi_file_t));
+    ctx->state_machine = input_state_machine_new(true);
     return ctx;
 }
 
@@ -15,8 +16,13 @@ void midi_file_free(midi_file_t *ctx)
     {
         return;
     }
-    if (ctx->mtrk != NULL)
+    input_state_machine_free(ctx->state_machine);
+    if (ctx->mtrk != NULL && ctx->mthd.track_count != 0)
     {
+        for (uint32_t i = 0; i < ctx->mthd.track_count; i++)
+        {
+            mtrk_free(ctx->mtrk[i]);
+        }
         free(ctx->mtrk);
         ctx->mtrk = NULL;
     }

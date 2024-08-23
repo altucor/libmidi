@@ -39,7 +39,7 @@ void midi_process_new_status_system(midi_t *midi, uint8_t b)
 void midi_process_new_status(midi_t *ctx, uint8_t b)
 {
     uint8_t status = (b >> 4) & MIDI_STATUS_MESSAGE_CMD_MASK;
-    uint8_t channel = (b & MIDI_STATUS_MESSAGE_CHANNEL_MASK);
+    uint8_t channel = (b & MIDI_STATUS_MESSAGE_SUBCMD_MASK);
 
     if (status == MIDI_STATUS_SYSTEM)
     {

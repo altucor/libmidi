@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15.2)
 
-project(midi C CXX)
+project(midi C)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
 set(CMAKE_CXX_STANDARD 17)
