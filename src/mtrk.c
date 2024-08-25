@@ -30,7 +30,7 @@ void mtrk_free(mtrk_t *ctx)
     {
         for (uint32_t i = 0; i < ctx->events_count; i++)
         {
-            midi_event_free(ctx->events[i]);
+            // midi_event_free(ctx->events[i]);
         }
         free(ctx->events);
         ctx->events = NULL;

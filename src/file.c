@@ -56,7 +56,7 @@ int midi_file_unmarshal(midi_file_t *ctx, uint8_t *data, uint32_t size)
     ctx->mtrk = calloc(ctx->mthd.track_count, sizeof(mtrk_t));
     for (uint32_t i = 0; i < ctx->mthd.track_count; i++)
     {
-        ctx->mtrk[i] = calloc(1, sizeof(mtrk_t));
+        ctx->mtrk[i] = mtrk_new(ctx->state_machine);
         if (res = mtrk_unmarshal(ctx->mtrk[i], data + iterator, size), res < 0)
         {
             return -1;

@@ -24,6 +24,22 @@ void vlv_free(vlv_t *ctx)
     free(ctx);
 }
 
+bool vlv_feed(vlv_t *ctx, uint8_t b)
+{
+    if (ctx->counter >= 4)
+    {
+        return true;
+    }
+    ctx->counter++;
+    ctx->val += (b & MIDI_VLV_DATA_MASK);
+    if (b & MIDI_VLV_CONTINUATION_BIT)
+    {
+        ctx->val = (ctx->val << 7);
+        return false;
+    }
+    return true; // means full
+}
+
 int vlv_unmarshal(vlv_t *ctx, uint8_t *data, uint32_t size)
 {
     uint32_t iterator = 0;
