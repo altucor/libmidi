@@ -1,34 +1,23 @@
 #include "event.h"
 
-// #include "events/meta.h"
-// #include "util.h"
+#include "events/meta.h"
+#include <stdlib.h>
 
-// #include <stdio.h>
-// #include <stdlib.h>
+midi_event_smf_t *midi_event_smf_new()
+{
+    midi_event_smf_t *ctx = calloc(1, sizeof(midi_event_smf_t));
+    vlv_reset(&ctx->predelay);
+    return ctx;
+}
 
-// midi_event_t *midi_event_new()
-// {
-//     midi_event_t *ctx = calloc(1, sizeof(midi_event_t));
-//     vlv_reset(&ctx->predelay);
-//     ctx->size = 0;
-//     ctx->data = NULL;
-//     return ctx;
-// }
-
-// void midi_event_free(midi_event_t *ctx)
-// {
-//     if (ctx == NULL)
-//     {
-//         return;
-//     }
-//     if (ctx->data != NULL)
-//     {
-//         free(ctx->data);
-//         ctx->data = NULL;
-//         ctx->size = 0;
-//     }
-//     free(ctx);
-// }
+void midi_event_smf_free(midi_event_smf_t *ctx)
+{
+    if (ctx == NULL)
+    {
+        return;
+    }
+    free(ctx);
+}
 
 // int midi_event_unmarshal_system(midi_event_t *ctx, uint8_t *data, uint32_t size)
 // {

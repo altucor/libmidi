@@ -5,6 +5,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void mtrk_handle_event(mtrk_t *ctx, midi_cmd_t msg, uint8_t message_meta, midi_event_t event)
+{
+    if (ctx->events_count == 0)
+    {
+        ctx->events = calloc(ctx->events_count + 1, sizeof(midi_event_smf_t));
+    }
+    else
+    {
+        ctx->events = realloc(ctx->events, sizeof(midi_event_smf_t) * ctx->events_count + 1);
+    }
+
+    midi_event_smf_t *smf_event = midi_event_smf_new();
+
+    smf_event->predelay.val = input_state_machine_get_predelay(ctx->state_machine);
+    smf_event->message = msg;
+    smf_event->message_meta = message_meta;
+    smf_event->event = event;
+    ctx->events[ctx->events_count] = smf_event;
+    ctx->events_count++;
+}
+
 mtrk_t *mtrk_new(input_state_machine_t *state_machine)
 {
     mtrk_t *ctx = calloc(1, sizeof(mtrk_t));
@@ -17,6 +38,10 @@ mtrk_t *mtrk_new(input_state_machine_t *state_machine)
     ctx->size = 0;
     ctx->events_count = 0;
     ctx->events = NULL;
+
+    ctx->cb.handle = ctx;
+    ctx->cb.event = (midi_cb_event_f *)&mtrk_handle_event;
+    input_state_machine_set_listener(ctx->state_machine, ctx->cb);
     return ctx;
 }
 
@@ -30,7 +55,7 @@ void mtrk_free(mtrk_t *ctx)
     {
         for (uint32_t i = 0; i < ctx->events_count; i++)
         {
-            // midi_event_free(ctx->events[i]);
+            midi_event_smf_free(ctx->events[i]);
         }
         free(ctx->events);
         ctx->events = NULL;
@@ -73,34 +98,15 @@ int mtrk_unmarshal(mtrk_t *ctx, uint8_t *data, uint32_t size)
         {
             break;
         }
+        if (ctx->events_count > 0 && ctx->events[ctx->events_count - 1]->message.status == MIDI_STATUS_SYSTEM &&
+            ctx->events[ctx->events_count - 1]->message.subCmd == MIDI_STATUS_SYSTEM_RESET_OR_META &&
+            ctx->events[ctx->events_count - 1]->message_meta == MIDI_META_EVENT_TRACK_END)
+        {
+            break;
+        }
         input_state_machine_feed(ctx->state_machine, data[iterator]);
         iterator++;
         size--;
-        // midi_event_t *event = midi_event_new();
-        // if (res = midi_event_unmarshal(event, data + iterator, size), res < 0)
-        // {
-        //     midi_event_free(event);
-        //     return -1;
-        // }
-        // iterator += res;
-        // size -= res;
-
-        // if (ctx->events_count == 0)
-        // {
-        //     ctx->events = calloc(1, sizeof(midi_event_t));
-        // }
-        // else
-        // {
-        //     ctx->events = realloc(ctx->events, sizeof(midi_event_t) * ctx->events_count + 1);
-        // }
-
-        // ctx->events[ctx->events_count] = event;
-        // ctx->events_count++;
-
-        // if (midi_event_is_system(event) && midi_event_meta_is_track_end(&event->meta))
-        // {
-        //     break;
-        // }
     }
 
     return iterator;

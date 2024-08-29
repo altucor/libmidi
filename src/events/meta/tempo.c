@@ -6,5 +6,7 @@ int midi_tempo_unmarshal(midi_tempo_t *ctx, uint8_t *data, uint32_t size)
     ctx->val = data[0] << 16;
     ctx->val |= data[1] << 8;
     ctx->val |= data[2];
-    ctx->val /= 60000000;
+    ctx->val = 60000000 / ctx->val;
+
+    return 3;
 }

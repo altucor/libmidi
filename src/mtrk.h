@@ -11,10 +11,11 @@
 typedef struct _mtrk
 {
     input_state_machine_t *state_machine;
+    midi_device_callback_data_t cb;
     char mtrk[MTRK_MARKER_SIZE];
     uint32_t size;
     uint32_t events_count;
-    midi_event_t **events;
+    midi_event_smf_t **events;
 } mtrk_t;
 
 #ifdef __cplusplus

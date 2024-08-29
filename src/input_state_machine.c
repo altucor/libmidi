@@ -47,6 +47,11 @@ void input_state_machine_free(input_state_machine_t *ctx)
     free(ctx);
 }
 
+void input_state_machine_set_listener(input_state_machine_t *ctx, midi_device_callback_data_t listener)
+{
+    ctx->listener = listener;
+}
+
 uint32_t input_state_machine_get_predelay(input_state_machine_t *ctx)
 {
     return ctx->predelay.val;
@@ -54,7 +59,7 @@ uint32_t input_state_machine_get_predelay(input_state_machine_t *ctx)
 
 void notify_watchers_system(input_state_machine_t *ctx)
 {
-    switch (ctx->event.meta.type)
+    switch (ctx->message_meta)
     {
     case MIDI_META_EVENT_SEQUENCE_NUMBER:
         break;
@@ -83,12 +88,18 @@ void notify_watchers_system(input_state_machine_t *ctx)
     case MIDI_META_EVENT_TRACK_END:
         // no size, just read zero byte at the end
         break;
-    case MIDI_META_EVENT_TEMPO:
-        // midi_tempo_unmarshal();
+    case MIDI_META_EVENT_TEMPO: {
+        midi_tempo_unmarshal(&ctx->event.meta.tempo, ctx->payload.data, ctx->payload.size);
+        if (ctx->listener.tempo != NULL)
+        {
+            ctx->listener.tempo(ctx->listener.handle, ctx->event.meta.tempo);
+        }
         break;
+    }
     case MIDI_META_EVENT_SMPTE_OFFSET:
         break;
     case MIDI_META_EVENT_TIME_SIGNATURE:
+        midi_time_signature_unmarshal(&ctx->event.meta.time_signature, ctx->payload.data, ctx->payload.size);
         break;
     case MIDI_META_EVENT_KEY_SIGNATURE:
         break;
@@ -96,6 +107,10 @@ void notify_watchers_system(input_state_machine_t *ctx)
         break;
     default:
         break;
+    }
+    if (ctx->listener.event != NULL)
+    {
+        ctx->listener.event(ctx->listener.handle, ctx->message, ctx->message_meta, ctx->event);
     }
 }
 
@@ -113,76 +128,86 @@ void notify_watchers(input_state_machine_t *ctx)
     switch (ctx->message.status)
     {
     case MIDI_STATUS_NOTE_OFF:
-    case MIDI_STATUS_NOTE_ON:
-        ctx->listener.note(ctx->listener.handle, ctx->event.note);
+    case MIDI_STATUS_NOTE_ON: {
+        if (ctx->listener.note != NULL)
+        {
+            ctx->listener.note(ctx->listener.handle, ctx->event.note);
+        }
         break;
+    }
     case MIDI_STATUS_KEY_PRESSURE:
         break;
-    case MIDI_STATUS_CONTROLLER_CHANGE:
-        ctx->listener.control(ctx->listener.handle, ctx->event.control);
+    case MIDI_STATUS_CONTROLLER_CHANGE: {
+        if (ctx->listener.control != NULL)
+        {
+            ctx->listener.control(ctx->listener.handle, ctx->event.control);
+        }
         break;
-    case MIDI_STATUS_PITCH_BEND:
-        ctx->listener.pitch(ctx->listener.handle, ctx->event.pitch);
+    }
+    case MIDI_STATUS_PITCH_BEND: {
+        if (ctx->listener.pitch != NULL)
+        {
+            ctx->listener.pitch(ctx->listener.handle, ctx->event.pitch);
+        }
         break;
+    }
     case MIDI_STATUS_PROGRAM_CHANGE:
         break;
     case MIDI_STATUS_CHANNEL_PRESSURE:
         break;
     }
+    if (ctx->listener.event != NULL)
+    {
+        ctx->listener.event(ctx->listener.handle, ctx->message, ctx->message_meta, ctx->event);
+    }
 }
 
 void handle_system_meta_event_payload_size(input_state_machine_t *ctx, const uint8_t b)
 {
-    if (vlv_feed(&ctx->event.meta.length, b))
+    if (vlv_feed(&ctx->meta_length, b))
     {
         // if full switch to filling bugger
-        buffer_set_size(&ctx->payload, ctx->event.meta.length.val);
-        ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
+        buffer_set_size(&ctx->payload, ctx->meta_length.val);
+        if (ctx->meta_length.val != 0)
+        {
+            ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
+            return;
+        }
+        else
+        {
+            notify_watchers(ctx);
+            ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
+            return;
+        }
     }
 }
 
 void handle_system_meta_event(input_state_machine_t *ctx, const uint8_t b)
 {
-    ctx->event.meta.type = b;
-    switch (ctx->event.meta.type)
+    ctx->message_meta = b;
+    switch (ctx->message_meta)
     {
     case MIDI_META_EVENT_SEQUENCE_NUMBER:
-        break;
     case MIDI_META_EVENT_TEXT:
-        break;
     case MIDI_META_EVENT_COPYRIGHT:
-        break;
     case MIDI_META_EVENT_TRACK_NAME:
-        break;
     case MIDI_META_EVENT_INSTRUMENT_NAME:
-        break;
     case MIDI_META_EVENT_LYRIC_TEXT:
-        break;
     case MIDI_META_EVENT_TEXT_MARKER:
-        break;
     case MIDI_META_EVENT_CUE_POINT:
-        break;
     case MIDI_META_EVENT_PROGRAM_PATCH_NAME:
-        break;
     case MIDI_META_EVENT_DEVICE_PORT_NAME:
-        break;
     case MIDI_META_EVENT_MIDI_CHANNEL:
-        break;
     case MIDI_META_EVENT_MIDI_PORT:
-        break;
     case MIDI_META_EVENT_TRACK_END:
-        // no size, just read zero byte at the end
-        break;
     case MIDI_META_EVENT_TEMPO:
-        ctx->state = MIDI_INPUT_STATE_READ_META_PAYLOAD_SIZE;
-        break;
     case MIDI_META_EVENT_SMPTE_OFFSET:
-        break;
     case MIDI_META_EVENT_TIME_SIGNATURE:
-        break;
     case MIDI_META_EVENT_KEY_SIGNATURE:
-        break;
     case MIDI_META_EVENT_PROPRIETARY_EVENT:
+        ctx->state = MIDI_INPUT_STATE_READ_META_PAYLOAD_SIZE;
+        vlv_reset(&ctx->meta_length);
+        buffer_reset(&ctx->payload);
         break;
     default:
         break;
@@ -224,11 +249,13 @@ void handle_new_status(input_state_machine_t *ctx, const uint8_t b)
     case MIDI_STATUS_KEY_PRESSURE:
     case MIDI_STATUS_CONTROLLER_CHANGE:
     case MIDI_STATUS_PITCH_BEND:
+        buffer_reset(&ctx->payload);
         buffer_set_size(&ctx->payload, 2);
         ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
         break;
     case MIDI_STATUS_PROGRAM_CHANGE:
     case MIDI_STATUS_CHANNEL_PRESSURE:
+        buffer_reset(&ctx->payload);
         buffer_set_size(&ctx->payload, 1);
         ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
         break;
@@ -300,10 +327,10 @@ void handle_read_payload_end(input_state_machine_t *ctx, const uint8_t b)
 void input_state_machine_feed(input_state_machine_t *ctx, const uint8_t b)
 {
     ctx->handlers.arr[ctx->state](ctx, b);
-    if (ctx->listener.handle == NULL)
-    {
-        return;
-    }
+    // if (ctx->listener.handle == NULL)
+    // {
+    //     return;
+    // }
     // switch (ctx->message.status)
     // {
     // case MIDI_STATUS_NOTE_OFF:
