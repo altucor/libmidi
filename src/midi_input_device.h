@@ -51,7 +51,7 @@ typedef struct input_state_handlers
 typedef struct input_state_machine
 {
     input_state_handlers_t handlers;
-    midi_device_callback_data_t listener;
+    midi_device_callback_data_t *listener;
     bool smf; // SMF - Standard Midi File, if set then expect to see VLV pre-delays in stream
     midi_input_state_t state;
     midi_event_smf_t event_smf;
@@ -65,7 +65,7 @@ extern "C" {
 void midi_input_device_reset(midi_input_device_t *ctx);
 midi_input_device_t *midi_input_device_new(bool smf);
 void midi_input_device_free(midi_input_device_t *ctx);
-void midi_input_device_set_listener(midi_input_device_t *ctx, midi_device_callback_data_t listener);
+void midi_input_device_set_listener(midi_input_device_t *ctx, midi_device_callback_data_t *listener);
 uint32_t midi_input_device_get_predelay(midi_input_device_t *ctx);
 void midi_input_device_feed(midi_input_device_t *ctx, const uint8_t b);
 
