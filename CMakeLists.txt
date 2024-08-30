@@ -25,10 +25,9 @@ ELSE()
     message(" ! ! ! Unknown build type.")
 ENDIF()
 
-file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS ${CMAKE_SOURCE_DIR}/src "*.h" "*.hpp")
-file(GLOB_RECURSE ${PROJECT_NAME}_SOURCES ${CMAKE_SOURCE_DIR}/src "*.c" "*.cpp")
-
 include_directories("./src")
 
+file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS "src/**.h")
+file(GLOB_RECURSE ${PROJECT_NAME}_SOURCES "src/**.c")
+
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_HEADERS} ${${PROJECT_NAME}_SOURCES})
-set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C)
