@@ -45,7 +45,7 @@ void midi_input_device_free(midi_input_device_t *ctx)
     free(ctx);
 }
 
-void midi_input_device_set_listener(midi_input_device_t *ctx, midi_device_callback_data_t listener)
+void midi_input_device_set_listener(midi_input_device_t *ctx, midi_device_callback_data_t *listener)
 {
     ctx->listener = listener;
 }
@@ -88,9 +88,9 @@ void notify_watchers_system(midi_input_device_t *ctx)
         break;
     case MIDI_META_EVENT_TEMPO: {
         midi_tempo_unmarshal(&ctx->event_smf.event.meta.tempo, ctx->payload.data, ctx->payload.size);
-        if (ctx->listener.tempo != NULL)
+        if (ctx->listener->tempo != NULL)
         {
-            ctx->listener.tempo(ctx->listener.handle, ctx->event_smf.event.meta.tempo);
+            ctx->listener->tempo(ctx->listener->handle, ctx->event_smf.event.meta.tempo);
         }
         break;
     }
@@ -106,15 +106,15 @@ void notify_watchers_system(midi_input_device_t *ctx)
     default:
         break;
     }
-    if (ctx->listener.event != NULL)
+    if (ctx->listener->event != NULL)
     {
-        ctx->listener.event(ctx->listener.handle, ctx->event_smf.message, ctx->event_smf.message_meta, ctx->event_smf.event);
+        ctx->listener->event(ctx->listener->handle, ctx->event_smf.message, ctx->event_smf.message_meta, ctx->event_smf.event);
     }
 }
 
 void notify_watchers(midi_input_device_t *ctx)
 {
-    if (ctx->listener.handle == NULL)
+    if (ctx->listener == NULL || ctx->listener->handle == NULL)
     {
         return;
     }
@@ -127,51 +127,60 @@ void notify_watchers(midi_input_device_t *ctx)
     {
     case MIDI_STATUS_NOTE_OFF:
     case MIDI_STATUS_NOTE_ON: {
-        if (ctx->listener.note != NULL)
+        midi_note_unmarshal(&ctx->event_smf.event.note, ctx->event_smf.message, ctx->payload.data, ctx->payload.size);
+        if (ctx->listener->note != NULL)
         {
-            ctx->listener.note(ctx->listener.handle, ctx->event_smf.event.note);
+            ctx->listener->note(ctx->listener->handle, ctx->event_smf.event.note);
         }
         break;
     }
     case MIDI_STATUS_KEY_PRESSURE: {
-        if (ctx->listener.key_pressure != NULL)
+        midi_key_pressure_unmarshal(&ctx->event_smf.event.key_pressure, ctx->event_smf.message, ctx->payload.data,
+                                    ctx->payload.size);
+        if (ctx->listener->key_pressure != NULL)
         {
-            ctx->listener.key_pressure(ctx->listener.handle, ctx->event_smf.event.key_pressure);
+            ctx->listener->key_pressure(ctx->listener->handle, ctx->event_smf.event.key_pressure);
         }
         break;
     }
     case MIDI_STATUS_CONTROLLER_CHANGE: {
-        if (ctx->listener.control != NULL)
+        midi_control_unmarshal(&ctx->event_smf.event.control, ctx->payload.data, ctx->payload.size);
+        if (ctx->listener->control != NULL)
         {
-            ctx->listener.control(ctx->listener.handle, ctx->event_smf.event.control);
+            ctx->listener->control(ctx->listener->handle, ctx->event_smf.event.control);
         }
         break;
     }
     case MIDI_STATUS_PITCH_BEND: {
-        if (ctx->listener.pitch != NULL)
+        midi_pitch_unmarshal(&ctx->event_smf.event.pitch, ctx->payload.data, ctx->payload.size);
+        if (ctx->listener->pitch != NULL)
         {
-            ctx->listener.pitch(ctx->listener.handle, ctx->event_smf.event.pitch);
+            ctx->listener->pitch(ctx->listener->handle, ctx->event_smf.event.pitch);
         }
         break;
     }
     case MIDI_STATUS_PROGRAM_CHANGE: {
-        if (ctx->listener.program_change != NULL)
+        midi_program_change_unmarshal(&ctx->event_smf.event.program_change, ctx->event_smf.message, ctx->payload.data,
+                                      ctx->payload.size);
+        if (ctx->listener->program_change != NULL)
         {
-            ctx->listener.program_change(ctx->listener.handle, ctx->event_smf.event.program_change);
+            ctx->listener->program_change(ctx->listener->handle, ctx->event_smf.event.program_change);
         }
         break;
     }
     case MIDI_STATUS_CHANNEL_PRESSURE: {
-        if (ctx->listener.channel_pressure != NULL)
+        midi_channel_pressure_unmarshal(&ctx->event_smf.event.channel_pressure, ctx->event_smf.message, ctx->payload.data,
+                                        ctx->payload.size);
+        if (ctx->listener->channel_pressure != NULL)
         {
-            ctx->listener.channel_pressure(ctx->listener.handle, ctx->event_smf.event.channel_pressure);
+            ctx->listener->channel_pressure(ctx->listener->handle, ctx->event_smf.event.channel_pressure);
         }
         break;
     }
     }
-    if (ctx->listener.event != NULL)
+    if (ctx->listener->event != NULL)
     {
-        ctx->listener.event(ctx->listener.handle, ctx->event_smf.message, ctx->event_smf.message_meta, ctx->event_smf.event);
+        ctx->listener->event(ctx->listener->handle, ctx->event_smf.message, ctx->event_smf.message_meta, ctx->event_smf.event);
     }
 }
 

@@ -41,7 +41,7 @@ mtrk_t *mtrk_new(midi_input_device_t *device)
 
     ctx->cb.handle = ctx;
     ctx->cb.event = (midi_cb_event_f *)&mtrk_handle_event;
-    midi_input_device_set_listener(ctx->device, ctx->cb);
+    midi_input_device_set_listener(ctx->device, &ctx->cb);
     return ctx;
 }
 
