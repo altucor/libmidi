@@ -19,6 +19,7 @@ typedef void(midi_cb_tempo_f)(void *ctx, midi_tempo_t tempo);
 
 typedef struct midi_device_callback_data
 {
+    uint8_t channel;
     void *handle;
     midi_cb_event_f *event;
     midi_cb_note_f *note;
@@ -51,26 +52,22 @@ typedef struct input_state_machine
 {
     input_state_handlers_t handlers;
     midi_device_callback_data_t listener;
-    bool smf; // SMF - Standard Midi File, if set then expect to see VLV in stream
+    bool smf; // SMF - Standard Midi File, if set then expect to see VLV pre-delays in stream
     midi_input_state_t state;
-    midi_cmd_t message;
-    uint8_t message_meta;
-    vlv_t meta_length;
-    vlv_t predelay;
-    midi_event_t event;
+    midi_event_smf_t event_smf;
     buffer_t payload;
-} input_state_machine_t;
+} midi_input_device_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void input_state_machine_reset(input_state_machine_t *ctx);
-input_state_machine_t *input_state_machine_new(bool smf);
-void input_state_machine_free(input_state_machine_t *ctx);
-void input_state_machine_set_listener(input_state_machine_t *ctx, midi_device_callback_data_t listener);
-uint32_t input_state_machine_get_predelay(input_state_machine_t *ctx);
-void input_state_machine_feed(input_state_machine_t *ctx, const uint8_t b);
+void midi_input_device_reset(midi_input_device_t *ctx);
+midi_input_device_t *midi_input_device_new(bool smf);
+void midi_input_device_free(midi_input_device_t *ctx);
+void midi_input_device_set_listener(midi_input_device_t *ctx, midi_device_callback_data_t listener);
+uint32_t midi_input_device_get_predelay(midi_input_device_t *ctx);
+void midi_input_device_feed(midi_input_device_t *ctx, const uint8_t b);
 
 #ifdef __cplusplus
 }

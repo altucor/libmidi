@@ -6,7 +6,7 @@
 midi_file_t *midi_file_new()
 {
     midi_file_t *ctx = calloc(1, sizeof(midi_file_t));
-    ctx->state_machine = input_state_machine_new(true);
+    ctx->device = midi_input_device_new(true);
     return ctx;
 }
 
@@ -16,7 +16,7 @@ void midi_file_free(midi_file_t *ctx)
     {
         return;
     }
-    input_state_machine_free(ctx->state_machine);
+    midi_input_device_free(ctx->device);
     if (ctx->mtrk != NULL && ctx->mthd.track_count != 0)
     {
         for (uint32_t i = 0; i < ctx->mthd.track_count; i++)
@@ -56,7 +56,7 @@ int midi_file_unmarshal(midi_file_t *ctx, uint8_t *data, uint32_t size)
     ctx->mtrk = calloc(ctx->mthd.track_count, sizeof(mtrk_t));
     for (uint32_t i = 0; i < ctx->mthd.track_count; i++)
     {
-        ctx->mtrk[i] = mtrk_new(ctx->state_machine);
+        ctx->mtrk[i] = mtrk_new(ctx->device);
         if (res = mtrk_unmarshal(ctx->mtrk[i], data + iterator, size), res < 0)
         {
             return -1;

@@ -18,7 +18,7 @@ void mtrk_handle_event(mtrk_t *ctx, midi_cmd_t msg, uint8_t message_meta, midi_e
 
     midi_event_smf_t *smf_event = midi_event_smf_new();
 
-    smf_event->predelay.val = input_state_machine_get_predelay(ctx->state_machine);
+    smf_event->predelay.val = midi_input_device_get_predelay(ctx->device);
     smf_event->message = msg;
     smf_event->message_meta = message_meta;
     smf_event->event = event;
@@ -26,11 +26,11 @@ void mtrk_handle_event(mtrk_t *ctx, midi_cmd_t msg, uint8_t message_meta, midi_e
     ctx->events_count++;
 }
 
-mtrk_t *mtrk_new(input_state_machine_t *state_machine)
+mtrk_t *mtrk_new(midi_input_device_t *device)
 {
     mtrk_t *ctx = calloc(1, sizeof(mtrk_t));
-    ctx->state_machine = state_machine;
-    input_state_machine_reset(ctx->state_machine);
+    ctx->device = device;
+    midi_input_device_reset(ctx->device);
     for (uint8_t i = 0; i < MTRK_MARKER_SIZE; i++)
     {
         ctx->mtrk[i] = 0;
@@ -41,7 +41,7 @@ mtrk_t *mtrk_new(input_state_machine_t *state_machine)
 
     ctx->cb.handle = ctx;
     ctx->cb.event = (midi_cb_event_f *)&mtrk_handle_event;
-    input_state_machine_set_listener(ctx->state_machine, ctx->cb);
+    midi_input_device_set_listener(ctx->device, ctx->cb);
     return ctx;
 }
 
@@ -102,7 +102,12 @@ int mtrk_unmarshal(mtrk_t *ctx, uint8_t *data, uint32_t size)
         {
             break;
         }
-        input_state_machine_feed(ctx->state_machine, data[iterator]);
+        if (iterator == 47)
+        {
+            int a = 1;
+            a = a;
+        }
+        midi_input_device_feed(ctx->device, data[iterator]);
         iterator++;
     }
 
