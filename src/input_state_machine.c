@@ -5,7 +5,6 @@
 void handle_ready_to_new(input_state_machine_t *ctx, const uint8_t b);
 void handle_new_message(input_state_machine_t *ctx, const uint8_t b);
 void handle_read_payload(input_state_machine_t *ctx, const uint8_t b);
-void handle_read_payload_end(input_state_machine_t *ctx, const uint8_t b);
 void handle_system_meta_event(input_state_machine_t *ctx, const uint8_t b);
 void handle_system_meta_event_payload_size(input_state_machine_t *ctx, const uint8_t b);
 
@@ -14,7 +13,6 @@ void init_handlers(input_state_machine_t *ctx)
     ctx->handlers.arr[MIDI_INPUT_STATE_READY_TO_NEW] = (midi_cb_state_handler_f *)&handle_ready_to_new;
     ctx->handlers.arr[MIDI_INPUT_STATE_NEW_MESSAGE] = (midi_cb_state_handler_f *)&handle_new_message;
     ctx->handlers.arr[MIDI_INPUT_STATE_READ_PAYLOAD] = (midi_cb_state_handler_f *)&handle_read_payload;
-    ctx->handlers.arr[MIDI_INPUT_STATE_READ_PAYLOAD_END] = (midi_cb_state_handler_f *)&handle_read_payload_end;
     ctx->handlers.arr[MIDI_INPUT_STATE_SYSTEM_META] = (midi_cb_state_handler_f *)&handle_system_meta_event;
     ctx->handlers.arr[MIDI_INPUT_STATE_READ_META_PAYLOAD_SIZE] =
         (midi_cb_state_handler_f *)&handle_system_meta_event_payload_size;
@@ -135,8 +133,13 @@ void notify_watchers(input_state_machine_t *ctx)
         }
         break;
     }
-    case MIDI_STATUS_KEY_PRESSURE:
+    case MIDI_STATUS_KEY_PRESSURE: {
+        if (ctx->listener.key_pressure != NULL)
+        {
+            ctx->listener.key_pressure(ctx->listener.handle, ctx->event.key_pressure);
+        }
         break;
+    }
     case MIDI_STATUS_CONTROLLER_CHANGE: {
         if (ctx->listener.control != NULL)
         {
@@ -151,10 +154,20 @@ void notify_watchers(input_state_machine_t *ctx)
         }
         break;
     }
-    case MIDI_STATUS_PROGRAM_CHANGE:
+    case MIDI_STATUS_PROGRAM_CHANGE: {
+        if (ctx->listener.program_change != NULL)
+        {
+            ctx->listener.program_change(ctx->listener.handle, ctx->event.program_change);
+        }
         break;
-    case MIDI_STATUS_CHANNEL_PRESSURE:
+    }
+    case MIDI_STATUS_CHANNEL_PRESSURE: {
+        if (ctx->listener.channel_pressure != NULL)
+        {
+            ctx->listener.channel_pressure(ctx->listener.handle, ctx->event.channel_pressure);
+        }
         break;
+    }
     }
     if (ctx->listener.event != NULL)
     {
@@ -271,7 +284,7 @@ void handle_predelay(input_state_machine_t *ctx, const uint8_t b)
 {
     if (vlv_feed(&ctx->predelay, b))
     {
-        // if full switch to filling bugger
+        // if full switch to filling buffer
         ctx->state = MIDI_INPUT_STATE_NEW_MESSAGE;
     }
 }
@@ -312,47 +325,7 @@ void handle_read_payload(input_state_machine_t *ctx, const uint8_t b)
     }
 }
 
-void handle_read_payload_end(input_state_machine_t *ctx, const uint8_t b)
-{
-    if (ctx->message.status == MIDI_STATUS_SYSTEM)
-    {
-        // handle system event after collecting payload
-    }
-    else
-    {
-        // ctx->state
-    }
-}
-
 void input_state_machine_feed(input_state_machine_t *ctx, const uint8_t b)
 {
     ctx->handlers.arr[ctx->state](ctx, b);
-    // if (ctx->listener.handle == NULL)
-    // {
-    //     return;
-    // }
-    // switch (ctx->message.status)
-    // {
-    // case MIDI_STATUS_NOTE_OFF:
-    // case MIDI_STATUS_NOTE_ON:
-    //     ctx->listener.note(ctx->listener.handle, ctx->event.note);
-    //     break;
-    // case MIDI_STATUS_KEY_PRESSURE:
-    // case MIDI_STATUS_CONTROLLER_CHANGE:
-    //     ctx->listener.control(ctx->listener.handle, ctx->event.control);
-    //     break;
-    // case MIDI_STATUS_PITCH_BEND:
-    //     ctx->listener.pitch(ctx->listener.handle, ctx->event.pitch);
-    //     break;
-    // case MIDI_STATUS_PROGRAM_CHANGE:
-    // case MIDI_STATUS_CHANNEL_PRESSURE:
-    //     buffer_set_size(&ctx->payload, 1);
-    //     ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
-    //     break;
-    // case MIDI_STATUS_SYSTEM:
-    //     // ctx->state = MIDI_INPUT_STATE_STATUS_SYSTEM;
-    //     break;
-    // default:
-    //     break;
-    // }
 }

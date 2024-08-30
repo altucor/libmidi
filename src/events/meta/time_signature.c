@@ -3,10 +3,11 @@
 int midi_time_signature_unmarshal(midi_time_signature_t *ctx, uint8_t *data, uint32_t size)
 {
     // FF 58 04 nn dd cc bb
-    ctx->nn = data[0];
-    ctx->dd = data[1];
-    ctx->cc = data[2];
-    ctx->bb = data[3];
+    uint32_t iterator = 0;
+    ctx->numerator = data[iterator++];
+    ctx->denominator = data[iterator++];
+    ctx->ticks_per_click = data[iterator++];
+    ctx->thirty_second_notes_per_crotchet = data[iterator++];
 
-    return 4;
+    return iterator;
 }

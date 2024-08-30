@@ -1,7 +1,5 @@
 #include "events/note.h"
 
-#include "protocol.h"
-
 void midi_note_reset(midi_note_t *ctx)
 {
     ctx->on = false;

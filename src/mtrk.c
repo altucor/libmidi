@@ -13,7 +13,7 @@ void mtrk_handle_event(mtrk_t *ctx, midi_cmd_t msg, uint8_t message_meta, midi_e
     }
     else
     {
-        ctx->events = realloc(ctx->events, sizeof(midi_event_smf_t) * ctx->events_count + 1);
+        ctx->events = realloc(ctx->events, sizeof(midi_event_smf_t) * (ctx->events_count + 1));
     }
 
     midi_event_smf_t *smf_event = midi_event_smf_new();
@@ -79,13 +79,11 @@ int mtrk_unmarshal(mtrk_t *ctx, uint8_t *data, uint32_t size)
     int res = 0;
     uint32_t iterator = 0;
     (*(uint32_t *)&ctx->mtrk) = readu32(data, &iterator);
-    size -= sizeof(uint32_t);
     if (memcmp(ctx->mtrk, mtrk_header_reference, MTRK_MARKER_SIZE))
     {
         return -1;
     }
     ctx->size = readu32bswap(data, &iterator);
-    size -= sizeof(uint32_t);
 
     if (ctx->size > size)
     {
@@ -94,19 +92,18 @@ int mtrk_unmarshal(mtrk_t *ctx, uint8_t *data, uint32_t size)
 
     while (1)
     {
-        if (iterator >= size)
-        {
-            break;
-        }
         if (ctx->events_count > 0 && ctx->events[ctx->events_count - 1]->message.status == MIDI_STATUS_SYSTEM &&
             ctx->events[ctx->events_count - 1]->message.subCmd == MIDI_STATUS_SYSTEM_RESET_OR_META &&
             ctx->events[ctx->events_count - 1]->message_meta == MIDI_META_EVENT_TRACK_END)
         {
             break;
         }
+        if (iterator >= size)
+        {
+            break;
+        }
         input_state_machine_feed(ctx->state_machine, data[iterator]);
         iterator++;
-        size--;
     }
 
     return iterator;

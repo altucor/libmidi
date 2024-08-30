@@ -5,10 +5,10 @@
 
 typedef struct time_signature
 {
-    uint8_t nn;
-    uint8_t dd;
-    uint8_t cc;
-    uint8_t bb;
+    uint8_t numerator;
+    uint8_t denominator;
+    uint8_t ticks_per_click;
+    uint8_t thirty_second_notes_per_crotchet;
 } midi_time_signature_t;
 
 #ifdef __cplusplus

@@ -1,10 +1,13 @@
 #ifndef MIDI_EVENT_H
 #define MIDI_EVENT_H
 
+#include "events/channel_pressure.h"
 #include "events/control.h"
+#include "events/key_pressure.h"
 #include "events/meta.h"
 #include "events/note.h"
 #include "events/pitch.h"
+#include "events/program_change.h"
 #include "protocol.h"
 #include "vlv.h"
 
@@ -13,7 +16,10 @@
 
 typedef union midi_event {
     midi_note_t note;
+    midi_key_pressure_t key_pressure;
     midi_control_t control;
+    midi_program_change_t program_change;
+    midi_channel_pressure_t channel_pressure;
     midi_pitch_t pitch;
     midi_event_meta_t meta;
 } midi_event_t;
