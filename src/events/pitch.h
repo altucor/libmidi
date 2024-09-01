@@ -1,6 +1,8 @@
 #ifndef MIDI_PITCH_H
 #define MIDI_PITCH_H
 
+#include "protocol.h"
+
 #include <stdint.h>
 
 typedef struct midi_pitch
@@ -14,7 +16,8 @@ extern "C" {
 #endif
 
 void midi_pitch_reset(midi_pitch_t *ctx);
-int midi_pitch_unmarshal(midi_pitch_t *ctx, uint8_t *data, uint32_t size);
+int midi_pitch_unmarshal(midi_pitch_t *ctx, midi_cmd_t cmd, uint8_t *data, uint32_t size);
+void midi_pitch_to_str(midi_pitch_t *ctx, char *data, uint32_t size);
 
 #ifdef __cplusplus
 }

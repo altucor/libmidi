@@ -144,7 +144,7 @@ void notify_watchers(midi_input_device_t *ctx)
         break;
     }
     case MIDI_STATUS_CONTROLLER_CHANGE: {
-        midi_control_unmarshal(&ctx->event_smf.event.control, ctx->payload.data, ctx->payload.size);
+        midi_control_unmarshal(&ctx->event_smf.event.control, ctx->event_smf.message, ctx->payload.data, ctx->payload.size);
         if (ctx->listener->control != NULL)
         {
             ctx->listener->control(ctx->listener->handle, ctx->event_smf.event.control);
@@ -152,7 +152,7 @@ void notify_watchers(midi_input_device_t *ctx)
         break;
     }
     case MIDI_STATUS_PITCH_BEND: {
-        midi_pitch_unmarshal(&ctx->event_smf.event.pitch, ctx->payload.data, ctx->payload.size);
+        midi_pitch_unmarshal(&ctx->event_smf.event.pitch, ctx->event_smf.message, ctx->payload.data, ctx->payload.size);
         if (ctx->listener->pitch != NULL)
         {
             ctx->listener->pitch(ctx->listener->handle, ctx->event_smf.event.pitch);
