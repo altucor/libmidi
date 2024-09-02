@@ -7,7 +7,7 @@ AllowShortIfStatementsOnASingleLine: false
 IndentCaseLabels: false
 IndentAccessModifiers: false
 AccessModifierOffset: -4
-ColumnLimit: 128
+ColumnLimit: 164
 IndentExternBlock: NoIndent
 BraceWrapping:
   AfterExternBlock: false # <-- And this
