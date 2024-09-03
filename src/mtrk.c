@@ -113,3 +113,71 @@ int mtrk_unmarshal(mtrk_t *ctx, uint8_t *data, uint32_t size)
 
     return iterator;
 }
+
+uint32_t mtrk_get_events_count(mtrk_t *ctx)
+{
+    return ctx->events_count;
+}
+
+midi_event_smf_t *mtrk_get_event(mtrk_t *ctx, const uint32_t index)
+{
+    if (index >= ctx->events_count)
+    {
+        return NULL;
+    }
+    return ctx->events[index];
+}
+
+int32_t mtrk_find_event_index(mtrk_t *ctx, const uint32_t start_index, const midi_cmd_t cmd, const uint8_t message_meta)
+{
+    if (start_index > ctx->events_count)
+    {
+        return -1;
+    }
+    for (uint32_t i = start_index; i < ctx->events_count; i++)
+    {
+        midi_event_smf_t *event = ctx->events[i];
+        if (event->message.status != cmd.status || event->message.subCmd != cmd.subCmd || event->message_meta != message_meta)
+        {
+            continue;
+        }
+        return i;
+    }
+
+    return -1;
+}
+
+int32_t mtrk_find_corresponding_note_off(mtrk_t *ctx, const uint32_t start_index, const midi_event_smf_t noteOn)
+{
+    if (start_index > ctx->events_count)
+    {
+        return -1;
+    }
+    for (uint32_t i = start_index; i < ctx->events_count; i++)
+    {
+        midi_event_smf_t *event = ctx->events[i];
+        if (event->message.subCmd != noteOn.message.subCmd) // skip wrong channel events
+        {
+            continue;
+        }
+        if (event->message.status == MIDI_STATUS_NOTE_OFF && event->event.note.pitch == noteOn.event.note.pitch)
+        {
+        }
+        return i;
+    }
+
+    return -1;
+}
+
+float mtrk_get_duration_ms(mtrk_t *ctx, const uint16_t ppqn, const uint32_t bpm)
+{
+    float total_ms = 0.0f;
+    float pps = pulses_per_second(ppqn, bpm);
+    for (uint32_t i = 0; i < ctx->events_count; i++)
+    {
+        midi_event_smf_t *event = ctx->events[i];
+        total_ms += duration_to_ms(event->predelay.val, pps);
+    }
+
+    return total_ms;
+}

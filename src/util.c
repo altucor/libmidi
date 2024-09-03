@@ -47,3 +47,13 @@ void alloc_and_copy_from_stream_with_cmd(uint8_t **dst, uint8_t cmd, uint8_t *sr
     memcpy((*dst) + 1, src + *iterator, size);
     *iterator += size;
 }
+
+float pulses_per_second(const uint16_t ppqn, const uint32_t bpm)
+{
+    return (float)(60000.0f / (float)(ppqn * bpm));
+}
+
+float duration_to_ms(const uint32_t vlv_value, const float pulsesPerSecond)
+{
+    return ((float)vlv_value) * pulsesPerSecond;
+}

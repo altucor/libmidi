@@ -66,3 +66,22 @@ int midi_file_unmarshal(midi_file_t *ctx, uint8_t *data, uint32_t size)
     }
     return iterator;
 }
+
+mthd_t midi_file_get_mthd(midi_file_t *ctx)
+{
+    return ctx->mthd;
+}
+
+uint16_t midi_file_get_tracks_count(midi_file_t *ctx)
+{
+    return ctx->mthd.track_count;
+}
+
+mtrk_t *midi_file_get_track(midi_file_t *ctx, const uint16_t index)
+{
+    if (index >= ctx->mthd.track_count)
+    {
+        return NULL;
+    }
+    return ctx->mtrk[index];
+}
