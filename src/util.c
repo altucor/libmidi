@@ -57,3 +57,13 @@ float duration_to_ms(const uint32_t vlv_value, const float pulsesPerSecond)
 {
     return ((float)vlv_value) * pulsesPerSecond;
 }
+
+float pitch_to_freq(const uint8_t pitch)
+{
+    return kNotesFreq[pitch];
+}
+
+const char *pitch_to_name(const uint8_t pitch)
+{
+    return kNotesStr[pitch];
+}

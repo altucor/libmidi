@@ -16,6 +16,8 @@ void alloc_and_copy_from_stream(uint8_t **dst, uint8_t *src, const uint32_t size
 void alloc_and_copy_from_stream_with_cmd(uint8_t **dst, uint8_t cmd, uint8_t *src, const uint32_t size, uint32_t *iterator);
 float pulses_per_second(const uint16_t ppqn, const uint32_t bpm);
 float duration_to_ms(const uint32_t vlv_value, const float pulsesPerSecond);
+float pitch_to_freq(const uint8_t pitch);
+const char *pitch_to_name(const uint8_t pitch);
 
 #ifdef __cplusplus
 }

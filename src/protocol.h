@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #define MIDI_NOTES_IN_OCTAVE (12)
+#define MIDI_CHANNELS_MAX_COUNT (16)
 #define MIDI_CONTROLLERS_MAX_COUNT (128)
 
 #define MIDI_STATUS_MESSAGE_CMD_MASK (0x07)

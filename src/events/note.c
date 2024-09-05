@@ -1,4 +1,5 @@
 #include "events/note.h"
+#include "util.h"
 
 #include <stdio.h>
 
@@ -28,10 +29,10 @@ void midi_note_to_str(midi_note_t *ctx, char *data, uint32_t size)
 
 float midi_note_freq(midi_note_t *ctx)
 {
-    return kNotesFreq[ctx->pitch];
+    return pitch_to_freq(ctx->pitch);
 }
 
 const char *midi_note_name(midi_note_t *ctx)
 {
-    return kNotesStr[ctx->pitch];
+    return pitch_to_name(ctx->pitch);
 }
