@@ -169,15 +169,30 @@ int32_t mtrk_find_corresponding_note_off(mtrk_t *ctx, const uint32_t start_index
     return -1;
 }
 
-float mtrk_get_duration_ms(mtrk_t *ctx, const uint16_t ppqn, const uint32_t bpm)
+uint64_t mtrk_get_duration(mtrk_t *ctx)
 {
-    float total_ms = 0.0f;
-    float pps = pulses_per_second(ppqn, bpm);
+    uint64_t total = 0;
+    for (uint32_t i = 0; i < ctx->events_count; i++)
+    {
+        total += ctx->events[i]->predelay.val;
+    }
+    return total;
+}
+
+uint64_t mtrk_get_duration_channel(mtrk_t *ctx, const uint8_t channel)
+{
+    uint64_t total = 0;
     for (uint32_t i = 0; i < ctx->events_count; i++)
     {
         midi_event_smf_t *event = ctx->events[i];
-        total_ms += duration_to_ms(event->predelay.val, pps);
+        if (event->message.status >= MIDI_STATUS_NOTE_OFF && event->message.status <= MIDI_STATUS_PITCH_BEND)
+        {
+            if (event->event.note.channel != channel)
+            {
+                continue;
+            }
+        }
+        total += ctx->events[i]->predelay.val;
     }
-
-    return total_ms;
+    return total;
 }
