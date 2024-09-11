@@ -55,7 +55,7 @@ typedef struct input_state_machine
     bool smf; // SMF - Standard Midi File, if set then expect to see VLV pre-delays in stream
     midi_input_state_t state;
     midi_event_smf_t event_smf;
-    buffer_t payload;
+    buffer_t *payload;
 } midi_input_device_t;
 
 #ifdef __cplusplus

@@ -80,6 +80,7 @@ typedef enum midi_status_system
     MIDI_STATUS_SYSTEM_RESET_OR_META,
 } midi_status_system_e;
 
+// Meta events: https://www.mixagesoftware.com/en/midikit/help/HTML/meta_events.html
 typedef enum midi_meta_event
 {
     MIDI_META_EVENT_SEQUENCE_NUMBER = 0x00,
@@ -95,6 +96,7 @@ typedef enum midi_meta_event
     MIDI_META_EVENT_MIDI_CHANNEL = 0x20,
     MIDI_META_EVENT_MIDI_PORT = 0x21,
     MIDI_META_EVENT_TRACK_END = 0x2F,
+    MIDI_META_EVENT_M_LIVE_TAG = 0x4B,
     MIDI_META_EVENT_TEMPO = 0x51,
     MIDI_META_EVENT_SMPTE_OFFSET = 0x54,
     MIDI_META_EVENT_TIME_SIGNATURE = 0x58,

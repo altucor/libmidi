@@ -67,3 +67,22 @@ const char *pitch_to_name(const uint8_t pitch)
 {
     return kNotesStr[pitch];
 }
+
+bool is_meta_text_event(const uint8_t message_meta)
+{
+    switch (message_meta)
+    {
+    case MIDI_META_EVENT_TEXT:
+    case MIDI_META_EVENT_COPYRIGHT:
+    case MIDI_META_EVENT_TRACK_NAME:
+    case MIDI_META_EVENT_INSTRUMENT_NAME:
+    case MIDI_META_EVENT_LYRIC_TEXT:
+    case MIDI_META_EVENT_TEXT_MARKER:
+    case MIDI_META_EVENT_CUE_POINT:
+    case MIDI_META_EVENT_PROGRAM_PATCH_NAME:
+    case MIDI_META_EVENT_DEVICE_PORT_NAME:
+        return true;
+    }
+
+    return false;
+}
