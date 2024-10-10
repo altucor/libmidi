@@ -1,4 +1,4 @@
-#include "time_signature.h"
+#include "events/meta/time_signature.h"
 
 int midi_time_signature_unmarshal(midi_time_signature_t *ctx, uint8_t *data, uint32_t size)
 {

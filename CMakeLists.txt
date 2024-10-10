@@ -25,7 +25,7 @@ ELSE()
     message(" ! ! ! Unknown build type.")
 ENDIF()
 
-include_directories("./src")
+include_directories("./include")
 
 file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS "src/**.h")
 file(GLOB_RECURSE ${PROJECT_NAME}_SOURCES "src/**.c")
