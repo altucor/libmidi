@@ -4,7 +4,7 @@
 #include "protocol.h"
 #include <stdint.h>
 
-typedef struct midi_control
+typedef struct _midi_control
 {
     uint8_t channel;
     uint8_t control;

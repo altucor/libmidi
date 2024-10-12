@@ -4,6 +4,11 @@
 
 int midi_key_pressure_unmarshal(midi_key_pressure_t *ctx, midi_cmd_t cmd, uint8_t *data, uint32_t size)
 {
+    if (cmd.status != MIDI_STATUS_KEY_PRESSURE)
+    {
+        return -1;
+    }
+
     uint32_t iterator = 0;
     ctx->channel = cmd.subCmd;
     ctx->pitch = data[iterator++];

@@ -3,7 +3,7 @@
 
 #include "protocol.h"
 
-typedef struct program_change
+typedef struct _program_change
 {
     uint8_t channel;
     uint8_t program;

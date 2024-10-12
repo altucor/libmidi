@@ -3,7 +3,7 @@
 
 #include "protocol.h"
 
-typedef struct key_pressure
+typedef struct _key_pressure
 {
     uint8_t channel;
     uint8_t pitch;

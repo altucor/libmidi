@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-typedef struct midi_pitch
+typedef struct _midi_pitch
 {
     uint8_t channel;
     uint16_t value;

@@ -6,7 +6,7 @@
 #include "meta/time_signature.h"
 #include "protocol.h"
 
-typedef union midi_event_meta {
+typedef union _midi_event_meta {
     midi_tempo_t tempo;
     midi_time_signature_t time_signature;
     midi_text_event_t text;

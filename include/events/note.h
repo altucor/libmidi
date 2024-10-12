@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef struct midi_note
+typedef struct _midi_note
 {
     bool on;
     uint8_t channel;

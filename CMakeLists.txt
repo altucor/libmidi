@@ -25,9 +25,15 @@ ELSE()
     message(" ! ! ! Unknown build type.")
 ENDIF()
 
-include_directories("./include")
-
-file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS "src/**.h")
 file(GLOB_RECURSE ${PROJECT_NAME}_SOURCES "src/**.c")
 
-add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_HEADERS} ${${PROJECT_NAME}_SOURCES})
+add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+# Optionally enable testing
+option(ENABLE_TESTING "Enable unit testing" ON)
+
+if(ENABLE_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

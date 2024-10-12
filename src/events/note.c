@@ -13,6 +13,11 @@ void midi_note_reset(midi_note_t *ctx)
 
 int midi_note_unmarshal(midi_note_t *ctx, midi_cmd_t cmd, uint8_t *data, uint32_t size)
 {
+    if (cmd.status != MIDI_STATUS_NOTE_ON & cmd.status != MIDI_STATUS_NOTE_OFF)
+    {
+        return -1;
+    }
+
     uint32_t iterator = 0;
     ctx->on = cmd.status;
     ctx->channel = cmd.subCmd;

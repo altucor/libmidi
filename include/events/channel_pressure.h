@@ -3,7 +3,7 @@
 
 #include "protocol.h"
 
-typedef struct channel_pressure
+typedef struct _channel_pressure
 {
     uint8_t channel;
     uint8_t pressure;
