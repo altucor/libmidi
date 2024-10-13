@@ -8,6 +8,7 @@
 
 #include <stdbool.h>
 
+typedef void(midi_cb_error_f)(void *ctx, midi_error_e err);
 typedef void(midi_cb_event_f)(void *ctx, midi_cmd_t msg, uint8_t message_meta, midi_event_t event);
 typedef void(midi_cb_note_f)(void *ctx, midi_note_t note);
 typedef void(midi_cb_key_pressure_f)(void *ctx, midi_key_pressure_t pressure);
@@ -21,6 +22,7 @@ typedef struct midi_device_callback_data
 {
     uint8_t channel;
     void *handle;
+    midi_cb_error_f *error;
     midi_cb_event_f *event;
     midi_cb_note_f *note;
     midi_cb_key_pressure_f *key_pressure;
@@ -48,7 +50,7 @@ typedef struct input_state_handlers
     midi_cb_state_handler_f *arr[MIDI_INPUT_STATE_COUNT_TOTAL];
 } input_state_handlers_t;
 
-typedef struct input_state_machine
+typedef struct _midi_input_device
 {
     input_state_handlers_t handlers;
     midi_device_callback_data_t *listener;

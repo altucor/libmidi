@@ -25,7 +25,7 @@ extern "C" {
 mtrk_t *mtrk_new(midi_input_device_t *device);
 void mtrk_free(mtrk_t *ctx);
 int mtrk_debug(mtrk_t *ctx, char *data, uint32_t size);
-int mtrk_unmarshal(mtrk_t *ctx, uint8_t *data, uint32_t size);
+int mtrk_unmarshal(mtrk_t *ctx, const uint8_t *data, uint32_t size);
 uint32_t mtrk_get_events_count(mtrk_t *ctx);
 midi_event_smf_t *mtrk_get_event(mtrk_t *ctx, const uint32_t index);
 int32_t mtrk_find_event_index(mtrk_t *ctx, const uint32_t start_index, const midi_cmd_t cmd, const uint8_t message_meta);

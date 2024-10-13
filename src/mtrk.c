@@ -70,7 +70,7 @@ int mtrk_debug(mtrk_t *ctx, char *data, uint32_t size)
     return sprintf(data, mtrk_debug_fmt, ctx->mtrk, ctx->size, ctx->events_count);
 }
 
-int mtrk_unmarshal(mtrk_t *ctx, uint8_t *data, uint32_t size)
+int mtrk_unmarshal(mtrk_t *ctx, const uint8_t *data, uint32_t size)
 {
     if (size < sizeof(ctx->mtrk) + sizeof(ctx->size))
     {

@@ -8,9 +8,9 @@
 extern "C" {
 #endif
 
-uint16_t readu16bswap(uint8_t *data, uint32_t *iterator);
-uint32_t readu32(uint8_t *data, uint32_t *iterator);
-uint32_t readu32bswap(uint8_t *data, uint32_t *iterator);
+uint16_t readu16bswap(const uint8_t *data, uint32_t *iterator);
+uint32_t readu32(const uint8_t *data, uint32_t *iterator);
+uint32_t readu32bswap(const uint8_t *data, uint32_t *iterator);
 float pulses_per_second(const uint16_t ppqn, const uint32_t bpm);
 float duration_to_ms(const uint32_t vlv_value, const float pulsesPerSecond);
 float pitch_to_freq(const uint8_t pitch);

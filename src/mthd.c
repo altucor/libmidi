@@ -13,7 +13,7 @@ mthd_t *mthd_new()
         ctx->mthd[i] = 0;
     }
     ctx->length = 0;
-    ctx->format = MTHD_SINGLE_TRACK;
+    ctx->format = MTHD_FORMAT_SINGLE_TRACK;
     ctx->track_count = 0;
     ctx->ppqn = 0;
     return ctx;
@@ -34,22 +34,26 @@ int mthd_debug(mthd_t *ctx, char *data, uint32_t size)
     return sprintf(data, mthd_debug_fmt, ctx->mthd, ctx->length, ctx->format, ctx->track_count, ctx->ppqn);
 }
 
-int mthd_unmarshal(mthd_t *ctx, uint8_t *data, const uint32_t size)
+int mthd_unmarshal(mthd_t *ctx, const uint8_t *data, const uint32_t size)
 {
     if (size < sizeof(mthd_t))
     {
-        return -1;
+        return MIDI_ERROR_NOT_ENOUGH_DATA;
     }
 
     uint32_t iterator = 0;
     (*(uint32_t *)&ctx->mthd) = readu32(data, &iterator);
     if (memcmp(ctx->mthd, mthd_header_reference, MTHD_MARKER_SIZE))
     {
-        return -1;
+        return MIDI_ERROR_INVALID_MTHD_MARKER;
     }
 
     ctx->length = readu32bswap(data, &iterator);
     ctx->format = readu16bswap(data, &iterator);
+    if (ctx->format != MTHD_FORMAT_SINGLE_TRACK && ctx->format != MTHD_FORMAT_MULTI_TRACK && ctx->format != MTHD_FORMAT_MULTI_SONG)
+    {
+        return MIDI_ERROR_INVALID_MTHD_FORMAT;
+    }
     ctx->track_count = readu16bswap(data, &iterator);
     ctx->ppqn = readu16bswap(data, &iterator);
 

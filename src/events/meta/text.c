@@ -14,6 +14,6 @@ int midi_text_event_unmarshal(midi_text_event_t *ctx, uint8_t *data, uint32_t si
     ctx->val = malloc(size + 1);
     memcpy(ctx->val, data, size);
     ctx->val[size] = 0x00;
-
+    iterator += size;
     return iterator;
 }

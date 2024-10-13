@@ -5,7 +5,7 @@
 #include <memory.h>
 #include <stdlib.h>
 
-uint16_t readu16bswap(uint8_t *data, uint32_t *iterator)
+uint16_t readu16bswap(const uint8_t *data, uint32_t *iterator)
 {
     uint16_t out = *(uint16_t *)&data[*iterator];
 #ifdef _WIN32
@@ -17,14 +17,14 @@ uint16_t readu16bswap(uint8_t *data, uint32_t *iterator)
     return out;
 }
 
-uint32_t readu32(uint8_t *data, uint32_t *iterator)
+uint32_t readu32(const uint8_t *data, uint32_t *iterator)
 {
     uint32_t out = *(uint32_t *)&data[*iterator];
     *iterator += sizeof(uint32_t);
     return out;
 }
 
-uint32_t readu32bswap(uint8_t *data, uint32_t *iterator)
+uint32_t readu32bswap(const uint8_t *data, uint32_t *iterator)
 {
     uint32_t out = *(uint32_t *)&data[*iterator];
 #ifdef _WIN32

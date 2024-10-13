@@ -180,7 +180,7 @@ void handle_system_meta_event_payload_size(midi_input_device_t *ctx, const uint8
 {
     if (vlv_feed(&ctx->event_smf.meta_length, b))
     {
-        // if full switch to filling bugger
+        // if full switch to filling buffer
         buffer_realloc(ctx->payload, ctx->event_smf.meta_length.val);
         if (ctx->event_smf.meta_length.val != 0)
         {
