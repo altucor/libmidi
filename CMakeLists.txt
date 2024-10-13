@@ -37,3 +37,11 @@ if(ENABLE_TESTING)
     enable_testing()
     add_subdirectory(tests)
 endif()
+
+if(CODE_COVERAGE)
+    add_custom_target(coverage
+        COMMAND ./my_tests
+        COMMAND lcov --capture --directory . --output-file coverage.info
+        COMMAND genhtml coverage.info --output-directory out
+    )
+endif()

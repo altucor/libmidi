@@ -39,7 +39,7 @@ TEST(note, midi_note_unmarshal_invalid_cmd)
     uint32_t iterator = 0;
 
     midi_cmd_t cmd = {.status = MIDI_STATUS_KEY_PRESSURE, .subCmd = 5};
-    EXPECT_EQ(midi_note_unmarshal(&ctx, cmd, src.data(), src.size()), -1);
+    EXPECT_EQ(midi_note_unmarshal(&ctx, cmd, src.data(), src.size()), MIDI_ERROR_STATUS_INVALID);
     EXPECT_FALSE(ctx.on);
     EXPECT_EQ(ctx.channel, 0);
     EXPECT_EQ(ctx.pitch, 0);

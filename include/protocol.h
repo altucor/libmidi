@@ -3,17 +3,26 @@
 
 #include <stdint.h>
 
+#include "errors.h"
+
 #define MIDI_NOTES_IN_OCTAVE (12)
 #define MIDI_CHANNELS_MAX_COUNT (16)
 #define MIDI_CONTROLLERS_MAX_COUNT (128)
 
-#define MIDI_STATUS_MESSAGE_CMD_MASK (0x07)
-#define MIDI_STATUS_MESSAGE_SUBCMD_MASK (0x0F)
-#define MIDI_NEW_MESSAGE_BYTE_MASK (0x80)
-#define MIDI_NEW_MESSAGE_4BIT_MASK (0x08)
+#define MIDI_MASK_STATUS_MESSAGE_CMD (0x07)
+#define MIDI_MASK_STATUS_MESSAGE_SUBCMD (0x0F)
+#define MIDI_MASK_NEW_MESSAGE_BYTE (0x80)
+#define MIDI_MASK_NEW_MESSAGE_4BIT (0x08)
 
-#define MIDI_VLV_CONTINUATION_BIT (0x80)
-#define MIDI_VLV_DATA_MASK (0x7F)
+#define MIDI_MASK_DATA (0x7F)
+
+#define MIDI_CHECK_DATA_OR_FAIL(in, out)                                                                                                                           \
+    if (((in) & MIDI_MASK_NEW_MESSAGE_BYTE) != 0)                                                                                                                  \
+        return MIDI_ERROR_NOT_DATA;                                                                                                                                \
+    (out) = (in) & MIDI_MASK_DATA;
+
+#define MIDI_VLV_CONTINUATION_BIT (MIDI_MASK_NEW_MESSAGE_BYTE)
+#define MIDI_VLV_DATA_MASK (MIDI_MASK_DATA)
 #define MIDI_VLV_MAX_SIZE (sizeof(uint32_t))
 
 #define MTHD_MARKER_SIZE (4)

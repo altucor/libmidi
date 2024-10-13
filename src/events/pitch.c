@@ -14,17 +14,18 @@ int midi_pitch_unmarshal(midi_pitch_t *ctx, midi_cmd_t cmd, uint8_t *data, uint3
 {
     if (cmd.status != MIDI_STATUS_PITCH_BEND)
     {
-        return -1;
+        return MIDI_ERROR_STATUS_INVALID;
     }
 
     uint32_t iterator = 0;
     ctx->channel = cmd.subCmd;
 
-    // TODO: Here check 0x7F mask
-    // Create some define script to read byte, check with mask and set to value otherwise return -1
-    // also here each value should be 7 bit and corresponding bit shift should be applied for (0b0111 1111)  (0b0111 1111)
-    ctx->value = data[iterator++];
-    ctx->value |= (data[iterator++] << 7);
+    MIDI_CHECK_DATA_OR_FAIL(data[iterator], ctx->value);
+    iterator++;
+    uint8_t temp = 0;
+    MIDI_CHECK_DATA_OR_FAIL(data[iterator], temp);
+    iterator++;
+    ctx->value |= (temp << 7);
     return iterator;
 }
 

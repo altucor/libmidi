@@ -4,11 +4,12 @@ int midi_program_change_unmarshal(midi_program_change_t *ctx, midi_cmd_t cmd, ui
 {
     if (cmd.status != MIDI_STATUS_PROGRAM_CHANGE)
     {
-        return -1;
+        return MIDI_ERROR_STATUS_INVALID;
     }
 
     uint32_t iterator = 0;
     ctx->channel = cmd.subCmd;
-    ctx->program = data[iterator++];
+    MIDI_CHECK_DATA_OR_FAIL(data[iterator], ctx->program);
+    iterator++;
     return iterator;
 }

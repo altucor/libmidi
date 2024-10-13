@@ -291,12 +291,12 @@ void handle_predelay(midi_input_device_t *ctx, const uint8_t b)
 
 void handle_new_message(midi_input_device_t *ctx, const uint8_t b)
 {
-    if (!(MIDI_NEW_MESSAGE_BYTE_MASK & b))
+    if (!(MIDI_MASK_NEW_MESSAGE_BYTE & b))
     {
         return;
     }
     (*(uint8_t *)&ctx->event_smf.message) = b;
-    ctx->event_smf.message.status &= ~MIDI_NEW_MESSAGE_4BIT_MASK;
+    ctx->event_smf.message.status &= ~MIDI_MASK_NEW_MESSAGE_4BIT;
     handle_new_status(ctx, b);
 }
 

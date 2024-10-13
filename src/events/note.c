@@ -15,14 +15,16 @@ int midi_note_unmarshal(midi_note_t *ctx, midi_cmd_t cmd, uint8_t *data, uint32_
 {
     if (cmd.status != MIDI_STATUS_NOTE_ON & cmd.status != MIDI_STATUS_NOTE_OFF)
     {
-        return -1;
+        return MIDI_ERROR_STATUS_INVALID;
     }
 
     uint32_t iterator = 0;
     ctx->on = cmd.status;
     ctx->channel = cmd.subCmd;
-    ctx->pitch = data[iterator++];
-    ctx->velocity = data[iterator++];
+    MIDI_CHECK_DATA_OR_FAIL(data[iterator], ctx->pitch);
+    iterator++;
+    MIDI_CHECK_DATA_OR_FAIL(data[iterator], ctx->velocity);
+    iterator++;
     return iterator;
 }
 
