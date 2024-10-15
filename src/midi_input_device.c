@@ -109,7 +109,7 @@ void notify_watchers_system(midi_input_device_t *ctx)
 
 void notify_watchers(midi_input_device_t *ctx)
 {
-    if (ctx->listener == NULL || ctx->listener->handle == NULL)
+    if (ctx->listener == NULL)
     {
         return;
     }

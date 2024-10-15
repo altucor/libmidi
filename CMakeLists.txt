@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.15.2)
 
 project(midi C)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 
 IF(MSVC)
     add_definitions(-DOS_WINDOWS)

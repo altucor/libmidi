@@ -18,7 +18,7 @@ typedef void(midi_cb_channel_pressure_f)(void *ctx, midi_channel_pressure_t pres
 typedef void(midi_cb_pitch_f)(void *ctx, midi_pitch_t pitch);
 typedef void(midi_cb_tempo_f)(void *ctx, midi_tempo_t tempo);
 
-typedef struct midi_device_callback_data
+typedef struct _midi_device_callback_data
 {
     uint8_t channel;
     void *handle;
@@ -34,7 +34,7 @@ typedef struct midi_device_callback_data
 } midi_device_callback_data_t;
 
 typedef void(midi_cb_state_handler_f)(void *ctx, const uint8_t b);
-typedef enum midi_input_state
+typedef enum _midi_input_state
 {
     MIDI_INPUT_STATE_READY_TO_NEW = 0,
     MIDI_INPUT_STATE_PREDELAY,
@@ -45,7 +45,7 @@ typedef enum midi_input_state
     MIDI_INPUT_STATE_COUNT_TOTAL
 } midi_input_state_t;
 
-typedef struct input_state_handlers
+typedef struct _input_state_handlers
 {
     midi_cb_state_handler_f *arr[MIDI_INPUT_STATE_COUNT_TOTAL];
 } input_state_handlers_t;
