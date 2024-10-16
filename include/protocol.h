@@ -12,14 +12,16 @@
 #define MIDI_MASK_STATUS_MESSAGE_CMD (0x07)
 #define MIDI_MASK_STATUS_MESSAGE_SUBCMD (0x0F)
 #define MIDI_MASK_NEW_MESSAGE_BYTE (0x80)
-#define MIDI_MASK_NEW_MESSAGE_4BIT (0x08)
 
 #define MIDI_MASK_DATA (0x7F)
 
+#define MIDI_CHECK_NEW_MESSAGE(in) (((in) & MIDI_MASK_NEW_MESSAGE_BYTE) == MIDI_MASK_NEW_MESSAGE_BYTE)
+#define MIDI_CHECK_DATA(in) (!MIDI_CHECK_NEW_MESSAGE((in)))
+
 #define MIDI_CHECK_DATA_OR_FAIL(in, out)                                                                                                                           \
-    if (((in) & MIDI_MASK_NEW_MESSAGE_BYTE) != 0)                                                                                                                  \
+    if (!MIDI_CHECK_DATA((in)))                                                                                                                                    \
         return MIDI_ERROR_NOT_DATA;                                                                                                                                \
-    (out) = (in) & MIDI_MASK_DATA;
+    (out) = (in);
 
 #define MIDI_VLV_CONTINUATION_BIT (MIDI_MASK_NEW_MESSAGE_BYTE)
 #define MIDI_VLV_DATA_MASK (MIDI_MASK_DATA)
@@ -57,7 +59,7 @@ const static float kNotesFreq[] = {
     4186.01f, 4434.92f, 4698.63f, 4978.03f, 5274.04f, 5587.65f, 5919.91f, 6271.93f, 6644.88f, 7040.0f, 7458.62f, 7902.13f  /* #9 */
 };
 
-typedef enum _midi_status
+typedef enum _midi_status : uint8_t
 {
     MIDI_STATUS_NOTE_OFF = 0x00,
     MIDI_STATUS_NOTE_ON,
@@ -69,7 +71,7 @@ typedef enum _midi_status
     MIDI_STATUS_SYSTEM,
 } midi_status_e;
 
-typedef enum _midi_status_system
+typedef enum _midi_status_system : uint8_t
 {
     MIDI_STATUS_SYSTEM_EXCLUSIVE = 0x00,
     MIDI_STATUS_SYSTEM_RESERVED_1,
@@ -90,7 +92,7 @@ typedef enum _midi_status_system
 } midi_status_system_e;
 
 // Meta events: https://www.mixagesoftware.com/en/midikit/help/HTML/meta_events.html
-typedef enum _midi_meta_event
+typedef enum _midi_meta_event : uint8_t
 {
     MIDI_META_EVENT_SEQUENCE_NUMBER = 0x00,
     MIDI_META_EVENT_TEXT = 0x01,
@@ -113,10 +115,29 @@ typedef enum _midi_meta_event
     MIDI_META_EVENT_PROPRIETARY_EVENT = 0x7F,
 } midi_meta_event_e;
 
-typedef struct _midi_cmd
+#ifdef _MSC_VER
+#pragma pack(push, 1)
+#endif
+
+typedef struct __attribute__((packed)) _midi_cmd
 {
-    uint8_t subCmd : 4;
-    uint8_t status : 4;
+    union {
+        uint8_t raw;
+        struct
+        {
+            uint8_t channel : 4;
+            uint8_t ____pad : 4;
+        };
+        struct
+        {
+            midi_status_system_e system : 4;
+            midi_status_e status : 4;
+        };
+    };
 } midi_cmd_t;
+
+#ifdef _MSC_VER
+#pragma pack(pop)
+#endif
 
 #endif // MIDI_PROTOCOL_H

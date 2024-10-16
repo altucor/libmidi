@@ -93,7 +93,7 @@ int mtrk_unmarshal(mtrk_t *ctx, const uint8_t *data, uint32_t size)
     while (1)
     {
         if (ctx->events_count > 0 && ctx->events[ctx->events_count - 1]->message.status == MIDI_STATUS_SYSTEM &&
-            ctx->events[ctx->events_count - 1]->message.subCmd == MIDI_STATUS_SYSTEM_RESET_OR_META &&
+            ctx->events[ctx->events_count - 1]->message.system == MIDI_STATUS_SYSTEM_RESET_OR_META &&
             ctx->events[ctx->events_count - 1]->message_meta == MIDI_META_EVENT_TRACK_END)
         {
             break;
@@ -137,7 +137,7 @@ int32_t mtrk_find_event_index(mtrk_t *ctx, const uint32_t start_index, const mid
     for (uint32_t i = start_index; i < ctx->events_count; i++)
     {
         midi_event_smf_t *event = ctx->events[i];
-        if (event->message.status != cmd.status || event->message.subCmd != cmd.subCmd || event->message_meta != message_meta)
+        if (event->message.status != cmd.status || event->message.system != cmd.system || event->message_meta != message_meta)
         {
             continue;
         }
@@ -156,7 +156,7 @@ int32_t mtrk_find_corresponding_note_off(mtrk_t *ctx, const uint32_t start_index
     for (uint32_t i = start_index; i < ctx->events_count; i++)
     {
         midi_event_smf_t *event = ctx->events[i];
-        if (event->message.subCmd != noteOn.message.subCmd) // skip wrong channel events
+        if (event->message.channel != noteOn.message.channel) // skip wrong channel events
         {
             continue;
         }

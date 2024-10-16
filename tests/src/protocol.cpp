@@ -13,7 +13,6 @@ TEST(protocol, protocol_check)
     EXPECT_EQ(MIDI_MASK_STATUS_MESSAGE_CMD, 0x07);
     EXPECT_EQ(MIDI_MASK_STATUS_MESSAGE_SUBCMD, 0x0F);
     EXPECT_EQ(MIDI_MASK_NEW_MESSAGE_BYTE, 0x80);
-    EXPECT_EQ(MIDI_MASK_NEW_MESSAGE_4BIT, 0x08);
 
     EXPECT_EQ(MIDI_MASK_DATA, 0x7F);
 
@@ -26,37 +25,65 @@ TEST(protocol, protocol_check)
 
     EXPECT_STREQ(mthd_header_reference, "MThd");
     EXPECT_STREQ(mtrk_header_reference, "MTrk");
+
+    EXPECT_EQ(sizeof(midi_status_e), 1);
+    EXPECT_EQ(sizeof(midi_status_system_e), 1);
+    EXPECT_EQ(sizeof(midi_meta_event_e), 1);
+    EXPECT_EQ(sizeof(midi_cmd_t), 1);
 }
 
-static int MIDI_CHECK_DATA_OR_FAIL_wrapper(const uint8_t src, uint8_t *dst)
+TEST(protocol, MIDI_CHECK_NEW_MESSAGE)
 {
-    MIDI_CHECK_DATA_OR_FAIL(src, *dst);
-    return 0;
+    EXPECT_TRUE(MIDI_CHECK_NEW_MESSAGE(0xFF));
+    EXPECT_TRUE(MIDI_CHECK_NEW_MESSAGE(0x80));
+    EXPECT_TRUE(MIDI_CHECK_NEW_MESSAGE(0x81));
+    EXPECT_FALSE(MIDI_CHECK_NEW_MESSAGE(0x7F));
+    EXPECT_FALSE(MIDI_CHECK_NEW_MESSAGE(0x01));
+    EXPECT_FALSE(MIDI_CHECK_NEW_MESSAGE(0x00));
 }
 
-TEST(protocol, midi_macro_check)
+TEST(protocol, MIDI_CHECK_DATA)
 {
-    int ret = 0;
-    uint8_t dst = 0x00;
-    ret = MIDI_CHECK_DATA_OR_FAIL_wrapper(0xFF, &dst);
-    EXPECT_EQ(ret, MIDI_ERROR_NOT_DATA);
-    EXPECT_EQ(dst, 0);
+    EXPECT_FALSE(MIDI_CHECK_DATA(0xFF));
+    EXPECT_FALSE(MIDI_CHECK_DATA(0x80));
+    EXPECT_FALSE(MIDI_CHECK_DATA(0x81));
+    EXPECT_TRUE(MIDI_CHECK_DATA(0x7F));
+    EXPECT_TRUE(MIDI_CHECK_DATA(0x01));
+    EXPECT_TRUE(MIDI_CHECK_DATA(0x00));
+}
 
-    ret = MIDI_CHECK_DATA_OR_FAIL_wrapper(0x80, &dst);
-    EXPECT_EQ(ret, MIDI_ERROR_NOT_DATA);
-    EXPECT_EQ(dst, 0);
+TEST(protocol, midi_cmd_bit_fields)
+{
+    midi_cmd_t cmd = {0};
+    cmd.raw = (0x95 & MIDI_MASK_DATA);
+    EXPECT_EQ(cmd.status, MIDI_STATUS_NOTE_ON);
+    EXPECT_EQ(cmd.channel, 5);
 
-    ret = MIDI_CHECK_DATA_OR_FAIL_wrapper(0x7F, &dst);
-    EXPECT_EQ(ret, MIDI_ERROR_OK);
-    EXPECT_EQ(dst, 0x7F);
+    cmd.raw = (0xF2 & MIDI_MASK_DATA);
+    EXPECT_EQ(cmd.status, MIDI_STATUS_SYSTEM);
+    EXPECT_EQ(cmd.system, MIDI_STATUS_SYSTEM_SONG_POSITION);
+}
 
-    ret = MIDI_CHECK_DATA_OR_FAIL_wrapper(0x01, &dst);
-    EXPECT_EQ(ret, MIDI_ERROR_OK);
-    EXPECT_EQ(dst, 0x01);
+TEST(protocol, midi_cmd)
+{
+    midi_cmd_t cmd;
+    cmd.status = MIDI_STATUS_NOTE_ON;
+    cmd.channel = 3;
 
-    ret = MIDI_CHECK_DATA_OR_FAIL_wrapper(0x00, &dst);
-    EXPECT_EQ(ret, MIDI_ERROR_OK);
-    EXPECT_EQ(dst, 0x00);
+    EXPECT_EQ(cmd.status, MIDI_STATUS_NOTE_ON);
+    EXPECT_EQ(cmd.channel, 3);
+    EXPECT_EQ(cmd.system, 3);
+}
+
+TEST(protocol, midi_cmd_FF)
+{
+    midi_cmd_t cmd;
+    cmd.status = MIDI_STATUS_NOTE_ON;
+    cmd.channel = 0xFF;
+
+    EXPECT_EQ(cmd.status, MIDI_STATUS_NOTE_ON);
+    EXPECT_EQ(cmd.channel, 0x0F);
+    EXPECT_EQ(cmd.system, 0x0F);
 }
 
 TEST(protocol, midi_status)

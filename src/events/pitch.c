@@ -18,7 +18,7 @@ int midi_pitch_unmarshal(midi_pitch_t *ctx, midi_cmd_t cmd, uint8_t *data, uint3
     }
 
     uint32_t iterator = 0;
-    ctx->channel = cmd.subCmd;
+    ctx->channel = cmd.channel;
 
     MIDI_CHECK_DATA_OR_FAIL(data[iterator], ctx->value);
     iterator++;

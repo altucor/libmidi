@@ -1,5 +1,6 @@
 #include "midi_input_device.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 void handle_ready_to_new(midi_input_device_t *ctx, const uint8_t b);
@@ -113,11 +114,6 @@ void notify_watchers(midi_input_device_t *ctx)
     {
         return;
     }
-    if (ctx->event_smf.message.status == MIDI_STATUS_SYSTEM)
-    {
-        notify_watchers_system(ctx);
-        return;
-    }
     switch (ctx->event_smf.message.status)
     {
     case MIDI_STATUS_NOTE_OFF:
@@ -168,6 +164,10 @@ void notify_watchers(midi_input_device_t *ctx)
             ctx->listener->channel_pressure(ctx->listener->handle, ctx->event_smf.event.channel_pressure);
         }
         break;
+    }
+    case MIDI_STATUS_SYSTEM: {
+        notify_watchers_system(ctx);
+        return; // return to avoid notifying ctx->listener->event
     }
     }
     if (ctx->listener->event != NULL)
@@ -231,7 +231,7 @@ void handle_system_meta_event(midi_input_device_t *ctx, const uint8_t b)
 
 void handle_system_status(midi_input_device_t *ctx, const uint8_t b)
 {
-    switch (ctx->event_smf.message.subCmd)
+    switch (ctx->event_smf.message.system)
     {
     case MIDI_STATUS_SYSTEM_EXCLUSIVE:
         // System Exclusive (data dump) 2nd byte= Vendor ID followed by more data bytes and ending with EOX (0x7F).
@@ -291,13 +291,17 @@ void handle_predelay(midi_input_device_t *ctx, const uint8_t b)
 
 void handle_new_message(midi_input_device_t *ctx, const uint8_t b)
 {
-    if (!(MIDI_MASK_NEW_MESSAGE_BYTE & b))
+    if (!MIDI_CHECK_NEW_MESSAGE(b))
     {
+        if (ctx->listener->error)
+        {
+            ctx->listener->error(ctx->listener->handle, MIDI_ERROR_NOT_NEW_MESSAGE);
+        }
         return;
     }
-    (*(uint8_t *)&ctx->event_smf.message) = b;
-    ctx->event_smf.message.status &= ~MIDI_MASK_NEW_MESSAGE_4BIT;
-    handle_new_status(ctx, b);
+
+    ctx->event_smf.message.raw = (b & MIDI_MASK_DATA);
+    handle_new_status(ctx, ctx->event_smf.message.raw);
 }
 
 void handle_ready_to_new(midi_input_device_t *ctx, const uint8_t b)
@@ -329,5 +333,6 @@ void handle_read_payload(midi_input_device_t *ctx, const uint8_t b)
 
 void midi_input_device_feed(midi_input_device_t *ctx, const uint8_t b)
 {
+    printf(" --- state: 0x%02X\n", ctx->state);
     ctx->handlers.arr[ctx->state](ctx, b);
 }

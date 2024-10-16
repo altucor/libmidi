@@ -20,7 +20,7 @@ int midi_note_unmarshal(midi_note_t *ctx, midi_cmd_t cmd, uint8_t *data, uint32_
 
     uint32_t iterator = 0;
     ctx->on = cmd.status;
-    ctx->channel = cmd.subCmd;
+    ctx->channel = cmd.channel;
     MIDI_CHECK_DATA_OR_FAIL(data[iterator], ctx->pitch);
     iterator++;
     MIDI_CHECK_DATA_OR_FAIL(data[iterator], ctx->velocity);

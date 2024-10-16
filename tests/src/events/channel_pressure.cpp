@@ -10,7 +10,7 @@ TEST(channel_pressure, midi_channel_pressure_unmarshal)
     midi_channel_pressure_t ctx = {0};
     uint32_t iterator = 0;
 
-    midi_cmd_t cmd = {.status = MIDI_STATUS_CHANNEL_PRESSURE, .subCmd = 0};
+    midi_cmd_t cmd = {.status = MIDI_STATUS_CHANNEL_PRESSURE, .channel = 0};
     EXPECT_EQ(midi_channel_pressure_unmarshal(&ctx, cmd, src.data(), src.size()), 1);
     EXPECT_EQ(ctx.channel, 0);
     EXPECT_EQ(ctx.pressure, 0x57);
@@ -22,7 +22,7 @@ TEST(channel_pressure, midi_channel_pressure_channel)
     midi_channel_pressure_t ctx = {0};
     uint32_t iterator = 0;
 
-    midi_cmd_t cmd = {.status = MIDI_STATUS_CHANNEL_PRESSURE, .subCmd = 6};
+    midi_cmd_t cmd = {.status = MIDI_STATUS_CHANNEL_PRESSURE, .channel = 6};
     EXPECT_EQ(midi_channel_pressure_unmarshal(&ctx, cmd, src.data(), src.size()), 1);
     EXPECT_EQ(ctx.channel, 6);
     EXPECT_EQ(ctx.pressure, 0x57);
@@ -34,7 +34,7 @@ TEST(channel_pressure, midi_channel_pressure_invalid_cmd)
     midi_channel_pressure_t ctx = {0};
     uint32_t iterator = 0;
 
-    midi_cmd_t cmd = {.status = MIDI_STATUS_NOTE_ON, .subCmd = 6};
+    midi_cmd_t cmd = {.status = MIDI_STATUS_NOTE_ON, .channel = 6};
     EXPECT_EQ(midi_channel_pressure_unmarshal(&ctx, cmd, src.data(), src.size()), MIDI_ERROR_STATUS_INVALID);
     EXPECT_EQ(ctx.channel, 0);
     EXPECT_EQ(ctx.pressure, 0);
@@ -46,7 +46,7 @@ TEST(channel_pressure, midi_channel_pressure_not_data)
     midi_channel_pressure_t ctx = {0};
     uint32_t iterator = 0;
 
-    midi_cmd_t cmd = {.status = MIDI_STATUS_CHANNEL_PRESSURE, .subCmd = 6};
+    midi_cmd_t cmd = {.status = MIDI_STATUS_CHANNEL_PRESSURE, .channel = 6};
     EXPECT_EQ(midi_channel_pressure_unmarshal(&ctx, cmd, src.data(), src.size()), MIDI_ERROR_NOT_DATA);
     EXPECT_EQ(ctx.channel, 6);
     EXPECT_EQ(ctx.pressure, 0);
