@@ -10,14 +10,9 @@ TEST(protocol, protocol_check)
     EXPECT_EQ(MIDI_CHANNELS_MAX_COUNT, 16);
     EXPECT_EQ(MIDI_CONTROLLERS_MAX_COUNT, 128);
 
-    EXPECT_EQ(MIDI_MASK_STATUS_MESSAGE_CMD, 0x07);
-    EXPECT_EQ(MIDI_MASK_STATUS_MESSAGE_SUBCMD, 0x0F);
     EXPECT_EQ(MIDI_MASK_NEW_MESSAGE_BYTE, 0x80);
-
     EXPECT_EQ(MIDI_MASK_DATA, 0x7F);
 
-    EXPECT_EQ(MIDI_VLV_CONTINUATION_BIT, 0x80);
-    EXPECT_EQ(MIDI_VLV_DATA_MASK, 0x7F);
     EXPECT_EQ(MIDI_VLV_MAX_SIZE, 4);
 
     EXPECT_EQ(MTHD_MARKER_SIZE, 4);
@@ -25,6 +20,9 @@ TEST(protocol, protocol_check)
 
     EXPECT_STREQ(mthd_header_reference, "MThd");
     EXPECT_STREQ(mtrk_header_reference, "MTrk");
+
+    EXPECT_EQ(sizeof(kNotesStr) / sizeof(char *), MIDI_TOTAL_MAPPED_OCTAVES * MIDI_NOTES_IN_OCTAVE);
+    EXPECT_EQ(sizeof(kNotesFreq) / sizeof(float), MIDI_TOTAL_MAPPED_OCTAVES * MIDI_NOTES_IN_OCTAVE);
 
     EXPECT_EQ(sizeof(midi_status_e), 1);
     EXPECT_EQ(sizeof(midi_status_system_e), 1);
@@ -78,10 +76,10 @@ TEST(protocol, midi_cmd)
 TEST(protocol, midi_cmd_FF)
 {
     midi_cmd_t cmd;
-    cmd.status = MIDI_STATUS_NOTE_ON;
-    cmd.channel = 0xFF;
+    cmd.raw = 0xFF;
 
-    EXPECT_EQ(cmd.status, MIDI_STATUS_NOTE_ON);
+    EXPECT_TRUE(cmd.new_msg);
+    EXPECT_EQ(cmd.status, MIDI_STATUS_SYSTEM);
     EXPECT_EQ(cmd.channel, 0x0F);
     EXPECT_EQ(cmd.system, 0x0F);
 }

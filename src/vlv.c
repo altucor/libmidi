@@ -31,8 +31,9 @@ bool vlv_feed(vlv_t *ctx, uint8_t b)
         return true;
     }
     ctx->counter++;
-    ctx->val += (b & MIDI_VLV_DATA_MASK);
-    if (b & MIDI_VLV_CONTINUATION_BIT)
+    vlv_byte_t vlv_byte = {.raw = b};
+    ctx->val += vlv_byte.val;
+    if (vlv_byte.continuation)
     {
         ctx->val = (ctx->val << 7);
         return false;

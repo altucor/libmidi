@@ -1,9 +1,10 @@
 #ifndef MIDI_INPUT_STATE_MACHINE
 #define MIDI_INPUT_STATE_MACHINE
 
+#include "protocol.h"
+
 #include "buffer.h"
 #include "event.h"
-#include "protocol.h"
 #include "vlv.h"
 
 #include <stdbool.h>

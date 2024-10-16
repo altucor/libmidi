@@ -291,17 +291,17 @@ void handle_predelay(midi_input_device_t *ctx, const uint8_t b)
 
 void handle_new_message(midi_input_device_t *ctx, const uint8_t b)
 {
-    if (!MIDI_CHECK_NEW_MESSAGE(b))
+    ctx->event_smf.message.raw = b;
+    if (!ctx->event_smf.message.new_msg)
     {
+        ctx->event_smf.message.raw = 0x00;
         if (ctx->listener->error)
         {
             ctx->listener->error(ctx->listener->handle, MIDI_ERROR_NOT_NEW_MESSAGE);
         }
         return;
     }
-
-    ctx->event_smf.message.raw = (b & MIDI_MASK_DATA);
-    handle_new_status(ctx, ctx->event_smf.message.raw);
+    handle_new_status(ctx, b);
 }
 
 void handle_ready_to_new(midi_input_device_t *ctx, const uint8_t b)

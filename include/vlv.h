@@ -2,8 +2,18 @@
 #define MIDI_VLV_H
 
 #include "protocol.h"
+
 #include <stdbool.h>
 #include <stdint.h>
+
+typedef union _vlv_byte {
+    uint8_t raw;
+    struct
+    {
+        uint8_t val : 7;
+        bool continuation : 1;
+    };
+} vlv_byte_t;
 
 typedef struct _vlv
 {

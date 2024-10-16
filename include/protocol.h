@@ -1,6 +1,7 @@
 #ifndef MIDI_PROTOCOL_H
 #define MIDI_PROTOCOL_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "errors.h"
@@ -9,10 +10,7 @@
 #define MIDI_CHANNELS_MAX_COUNT (16)
 #define MIDI_CONTROLLERS_MAX_COUNT (128)
 
-#define MIDI_MASK_STATUS_MESSAGE_CMD (0x07)
-#define MIDI_MASK_STATUS_MESSAGE_SUBCMD (0x0F)
 #define MIDI_MASK_NEW_MESSAGE_BYTE (0x80)
-
 #define MIDI_MASK_DATA (0x7F)
 
 #define MIDI_CHECK_NEW_MESSAGE(in) (((in) & MIDI_MASK_NEW_MESSAGE_BYTE) == MIDI_MASK_NEW_MESSAGE_BYTE)
@@ -23,8 +21,6 @@
         return MIDI_ERROR_NOT_DATA;                                                                                                                                \
     (out) = (in);
 
-#define MIDI_VLV_CONTINUATION_BIT (MIDI_MASK_NEW_MESSAGE_BYTE)
-#define MIDI_VLV_DATA_MASK (MIDI_MASK_DATA)
 #define MIDI_VLV_MAX_SIZE (sizeof(uint32_t))
 
 #define MTHD_MARKER_SIZE (4)
@@ -32,6 +28,8 @@
 
 const static char *mthd_header_reference = "MThd";
 const static char *mtrk_header_reference = "MTrk";
+
+#define MIDI_TOTAL_MAPPED_OCTAVES (10)
 
 const static char *kNotesStr[] = {
     "C0", "C#0", "D0", "Eb0", "E0", "F0", "F#0", "G0", "G#0", "A0", "Bb0", "B0", /* #0 */
@@ -115,29 +113,19 @@ typedef enum _midi_meta_event : uint8_t
     MIDI_META_EVENT_PROPRIETARY_EVENT = 0x7F,
 } midi_meta_event_e;
 
-#ifdef _MSC_VER
-#pragma pack(push, 1)
-#endif
-
-typedef struct __attribute__((packed)) _midi_cmd
-{
-    union {
-        uint8_t raw;
-        struct
-        {
-            uint8_t channel : 4;
-            uint8_t ____pad : 4;
-        };
-        struct
-        {
-            midi_status_system_e system : 4;
-            midi_status_e status : 4;
-        };
+typedef union _midi_cmd {
+    uint8_t raw;
+    struct
+    {
+        midi_status_system_e system : 4;
+        midi_status_e status : 3;
+        bool new_msg : 1;
+    };
+    struct
+    {
+        uint8_t channel : 4;
+        uint8_t ____pad : 4;
     };
 } midi_cmd_t;
-
-#ifdef _MSC_VER
-#pragma pack(pop)
-#endif
 
 #endif // MIDI_PROTOCOL_H

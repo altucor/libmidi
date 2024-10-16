@@ -10,7 +10,9 @@ TEST(control, midi_control_unmarshal)
     midi_control_t ctx = {0};
     uint32_t iterator = 0;
 
-    midi_cmd_t cmd = {.status = MIDI_STATUS_CONTROLLER_CHANGE, .channel = 0};
+    midi_cmd_t cmd = {0};
+    cmd.status = MIDI_STATUS_CONTROLLER_CHANGE;
+    cmd.channel = 0;
     EXPECT_EQ(midi_control_unmarshal(&ctx, cmd, src.data(), src.size()), 2);
     EXPECT_EQ(ctx.channel, 0);
     EXPECT_EQ(ctx.control, 0x57);
@@ -23,7 +25,9 @@ TEST(control, midi_control_unmarshal_channel)
     midi_control_t ctx = {0};
     uint32_t iterator = 0;
 
-    midi_cmd_t cmd = {.status = MIDI_STATUS_CONTROLLER_CHANGE, .channel = 4};
+    midi_cmd_t cmd = {0};
+    cmd.status = MIDI_STATUS_CONTROLLER_CHANGE;
+    cmd.channel = 4;
     EXPECT_EQ(midi_control_unmarshal(&ctx, cmd, src.data(), src.size()), 2);
     EXPECT_EQ(ctx.channel, 4);
     EXPECT_EQ(ctx.control, 0x57);
@@ -36,7 +40,9 @@ TEST(control, midi_control_unmarshal_invalid)
     midi_control_t ctx = {0};
     uint32_t iterator = 0;
 
-    midi_cmd_t cmd = {.status = MIDI_STATUS_NOTE_OFF, .channel = 4};
+    midi_cmd_t cmd = {0};
+    cmd.status = MIDI_STATUS_NOTE_OFF;
+    cmd.channel = 4;
     EXPECT_EQ(midi_control_unmarshal(&ctx, cmd, src.data(), src.size()), MIDI_ERROR_STATUS_INVALID);
     EXPECT_EQ(ctx.channel, 0);
     EXPECT_EQ(ctx.control, 0);
@@ -49,7 +55,9 @@ TEST(control, midi_control_unmarshal_not_data)
     midi_control_t ctx = {0};
     uint32_t iterator = 0;
 
-    midi_cmd_t cmd = {.status = MIDI_STATUS_CONTROLLER_CHANGE, .channel = 4};
+    midi_cmd_t cmd = {0};
+    cmd.status = MIDI_STATUS_CONTROLLER_CHANGE;
+    cmd.channel = 4;
     EXPECT_EQ(midi_control_unmarshal(&ctx, cmd, src.data(), src.size()), MIDI_ERROR_NOT_DATA);
     EXPECT_EQ(ctx.channel, 4);
     EXPECT_EQ(ctx.control, 0x57);
