@@ -18,6 +18,7 @@ void mtrk_handle_event(mtrk_t *ctx, midi_cmd_t msg, uint8_t message_meta, midi_e
 
     midi_event_smf_t *smf_event = midi_event_smf_new();
 
+    // TODO: remove midi_input_device_get_predelay and get predelay from "midi_event_t"
     smf_event->predelay.val = midi_input_device_get_predelay(ctx->device);
     smf_event->message = msg;
     smf_event->message_meta = message_meta;

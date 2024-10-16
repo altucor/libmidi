@@ -333,6 +333,5 @@ void handle_read_payload(midi_input_device_t *ctx, const uint8_t b)
 
 void midi_input_device_feed(midi_input_device_t *ctx, const uint8_t b)
 {
-    printf(" --- state: 0x%02X\n", ctx->state);
     ctx->handlers.arr[ctx->state](ctx, b);
 }
