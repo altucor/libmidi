@@ -1,6 +1,8 @@
 #ifndef MIDI_EVENT_H
 #define MIDI_EVENT_H
 
+#include "protocol.h"
+
 #include "events/channel_pressure.h"
 #include "events/control.h"
 #include "events/key_pressure.h"
@@ -8,7 +10,6 @@
 #include "events/note.h"
 #include "events/pitch.h"
 #include "events/program_change.h"
-#include "protocol.h"
 #include "vlv.h"
 
 #include <stdbool.h>
@@ -26,10 +27,10 @@ typedef union midi_event {
 
 typedef struct midi_event_smf
 {
-    vlv_t predelay;
+    uint32_t predelay;
     midi_cmd_t message;
     uint8_t message_meta;
-    vlv_t meta_length;
+    uint32_t meta_length;
     midi_event_t event;
 } midi_event_smf_t;
 

@@ -26,9 +26,11 @@ extern "C" {
 #endif
 
 void vlv_reset(vlv_t *ctx);
-vlv_t *vlv_new();
-void vlv_free(vlv_t *ctx);
 bool vlv_feed(vlv_t *ctx, uint8_t b);
+uint32_t vlv_get_value(vlv_t *ctx);
+void vlv_set_value(vlv_t *ctx, const uint32_t val);
+bool vlv_can_fetch(vlv_t *ctx);
+uint8_t vlv_fetch(vlv_t *ctx);
 
 #ifdef __cplusplus
 }

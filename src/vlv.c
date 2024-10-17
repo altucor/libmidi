@@ -1,27 +1,11 @@
 #include "vlv.h"
 
-#include <stdlib.h>
+#include <stdio.h>
 
 void vlv_reset(vlv_t *ctx)
 {
     ctx->counter = 0;
     ctx->val = 0;
-}
-
-vlv_t *vlv_new()
-{
-    vlv_t *ctx = calloc(1, sizeof(vlv_t));
-    vlv_reset(ctx);
-    return ctx;
-}
-
-void vlv_free(vlv_t *ctx)
-{
-    if (ctx == NULL)
-    {
-        return;
-    }
-    free(ctx);
 }
 
 bool vlv_feed(vlv_t *ctx, uint8_t b)
@@ -39,4 +23,56 @@ bool vlv_feed(vlv_t *ctx, uint8_t b)
         return false;
     }
     return true; // means full
+}
+
+uint32_t vlv_get_value(vlv_t *ctx)
+{
+    return ctx->val;
+}
+
+void vlv_set_value(vlv_t *ctx, const uint32_t val)
+{
+    ctx->val = val;
+    if ((ctx->val & 0xFE00000) != 0)
+    {
+        ctx->counter = 0;
+        return;
+    }
+    if ((ctx->val & 0x1FC000) != 0)
+    {
+        ctx->counter = 1;
+        return;
+    }
+    if ((ctx->val & 0x3F80) != 0)
+    {
+        ctx->counter = 2;
+        return;
+    }
+    if ((ctx->val & 0x7F) != 0)
+    {
+        ctx->counter = 3;
+        return;
+    }
+}
+
+bool vlv_can_fetch(vlv_t *ctx)
+{
+    return ctx->counter <= 3 && ctx->val != 0;
+}
+
+uint8_t vlv_fetch(vlv_t *ctx)
+{
+    if (!vlv_can_fetch(ctx))
+    {
+        return 0;
+    }
+
+    uint8_t masked_val = MIDI_VLV_EXTRACT_BYTE_AT_INDEX(ctx->val, ctx->counter);
+    vlv_byte_t vlv_byte = {.raw = masked_val};
+    ctx->counter++;
+    if (vlv_can_fetch(ctx))
+    {
+        vlv_byte.continuation = true;
+    }
+    return vlv_byte.raw;
 }

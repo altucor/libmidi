@@ -1,6 +1,5 @@
 #include "midi_input_device.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 void handle_ready_to_new(midi_input_device_t *ctx, const uint8_t b);
@@ -25,6 +24,7 @@ void midi_input_device_reset(midi_input_device_t *ctx)
     ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
     midi_event_smf_reset(&ctx->event_smf);
     buffer_reset(ctx->payload);
+    vlv_reset(&ctx->vlv);
 }
 
 midi_input_device_t *midi_input_device_new(bool smf)
@@ -43,6 +43,7 @@ void midi_input_device_free(midi_input_device_t *ctx)
     {
         return;
     }
+    buffer_free(ctx->payload);
     free(ctx);
 }
 
@@ -53,7 +54,7 @@ void midi_input_device_set_listener(midi_input_device_t *ctx, midi_device_callba
 
 uint32_t midi_input_device_get_predelay(midi_input_device_t *ctx)
 {
-    return ctx->event_smf.predelay.val;
+    return ctx->event_smf.predelay;
 }
 
 void notify_watchers_system(midi_input_device_t *ctx)
@@ -178,12 +179,13 @@ void notify_watchers(midi_input_device_t *ctx)
 
 void handle_system_meta_event_payload_size(midi_input_device_t *ctx, const uint8_t b)
 {
-    if (vlv_feed(&ctx->event_smf.meta_length, b))
+    if (vlv_feed(&ctx->vlv, b))
     {
         // if full switch to filling buffer
-        buffer_realloc(ctx->payload, ctx->event_smf.meta_length.val);
-        if (ctx->event_smf.meta_length.val != 0)
+        ctx->event_smf.meta_length = vlv_get_value(&ctx->vlv);
+        if (ctx->event_smf.meta_length != 0)
         {
+            buffer_realloc(ctx->payload, ctx->event_smf.meta_length);
             ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
             return;
         }
@@ -221,7 +223,8 @@ void handle_system_meta_event(midi_input_device_t *ctx, const uint8_t b)
     case MIDI_META_EVENT_KEY_SIGNATURE:
     case MIDI_META_EVENT_PROPRIETARY_EVENT:
         ctx->state = MIDI_INPUT_STATE_READ_META_PAYLOAD_SIZE;
-        vlv_reset(&ctx->event_smf.meta_length);
+        ctx->event_smf.meta_length = 0;
+        vlv_reset(&ctx->vlv);
         buffer_reset(ctx->payload);
         break;
     default:
@@ -282,9 +285,10 @@ void handle_new_status(midi_input_device_t *ctx, const uint8_t b)
 
 void handle_predelay(midi_input_device_t *ctx, const uint8_t b)
 {
-    if (vlv_feed(&ctx->event_smf.predelay, b))
+    if (vlv_feed(&ctx->vlv, b))
     {
         // if full switch to filling buffer
+        ctx->event_smf.predelay = vlv_get_value(&ctx->vlv);
         ctx->state = MIDI_INPUT_STATE_NEW_MESSAGE;
     }
 }
@@ -311,6 +315,7 @@ void handle_ready_to_new(midi_input_device_t *ctx, const uint8_t b)
     if (ctx->smf)
     {
         ctx->state = MIDI_INPUT_STATE_PREDELAY;
+        vlv_reset(&ctx->vlv);
         handle_predelay(ctx, b);
         return;
     }

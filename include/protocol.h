@@ -22,6 +22,14 @@
     (out) = (in);
 
 #define MIDI_VLV_MAX_SIZE (sizeof(uint32_t))
+// 0b 01111111 - MIDI_VLV_BYTE_SIZE_IN_BITS
+#define MIDI_VLV_BYTE_SIZE_IN_BITS (7)
+// 0b 00001111 11111111 11111111 11111111 - 0x0FFF FFFF - maximum uint32_t value bit mask
+// ---------------^ this one MSB start
+#define MIDI_VLV_MSB_BIT_START (21)
+#define MIDI_VLV_GET_BIT_SHIFT_FROM_COUNTER(byte_index) (MIDI_VLV_MSB_BIT_START - (MIDI_VLV_BYTE_SIZE_IN_BITS * byte_index))
+#define MIDI_VLV_EXTRACT_BYTE_AT_INDEX(val, byte_index)                                                                                                            \
+    (val & (MIDI_MASK_DATA << MIDI_VLV_GET_BIT_SHIFT_FROM_COUNTER(byte_index))) >> (MIDI_VLV_GET_BIT_SHIFT_FROM_COUNTER(byte_index))
 
 #define MTHD_MARKER_SIZE (4)
 #define MTRK_MARKER_SIZE (4)

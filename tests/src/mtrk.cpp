@@ -35,7 +35,7 @@ TEST(mtrk, mtrk_full_check)
     EXPECT_EQ(event->message.status, MIDI_STATUS_SYSTEM);
     EXPECT_EQ(event->message.system, MIDI_STATUS_SYSTEM_RESET_OR_META);
     EXPECT_EQ(event->message_meta, MIDI_META_EVENT_TEMPO);
-    EXPECT_EQ(event->predelay.val, 0);
+    EXPECT_EQ(event->predelay, 0);
     EXPECT_EQ(event->event.meta.tempo.val, 120);
 
     event = mtrk_get_event(mtrk_ctx.get(), event_iter++);
@@ -43,7 +43,7 @@ TEST(mtrk, mtrk_full_check)
     EXPECT_EQ(event->message.status, MIDI_STATUS_SYSTEM);
     EXPECT_EQ(event->message.system, MIDI_STATUS_SYSTEM_RESET_OR_META);
     EXPECT_EQ(event->message_meta, MIDI_META_EVENT_TIME_SIGNATURE);
-    EXPECT_EQ(event->predelay.val, 0);
+    EXPECT_EQ(event->predelay, 0);
     EXPECT_EQ(event->event.meta.time_signature.numerator, 4);
     EXPECT_EQ(event->event.meta.time_signature.denominator, 2);
     EXPECT_EQ(event->event.meta.time_signature.ticks_per_click, 24);
@@ -54,7 +54,7 @@ TEST(mtrk, mtrk_full_check)
     EXPECT_EQ(event->message.status, MIDI_STATUS_SYSTEM);
     EXPECT_EQ(event->message.system, MIDI_STATUS_SYSTEM_RESET_OR_META);
     EXPECT_EQ(event->message_meta, MIDI_META_EVENT_TRACK_NAME);
-    EXPECT_EQ(event->predelay.val, 0);
+    EXPECT_EQ(event->predelay, 0);
     EXPECT_STREQ(event->event.meta.text.val, "3xOsc 1");
 
     event = mtrk_get_event(mtrk_ctx.get(), event_iter++);
@@ -62,7 +62,7 @@ TEST(mtrk, mtrk_full_check)
     EXPECT_EQ(event->message.status, MIDI_STATUS_NOTE_ON);
     EXPECT_EQ(event->message.channel, 0);
     EXPECT_EQ(event->message_meta, 0);
-    EXPECT_EQ(event->predelay.val, 0);
+    EXPECT_EQ(event->predelay, 0);
     EXPECT_TRUE(event->event.note.on);
     EXPECT_EQ(event->event.note.channel, 0);
     EXPECT_EQ(event->event.note.pitch, 60);
@@ -73,7 +73,7 @@ TEST(mtrk, mtrk_full_check)
     EXPECT_EQ(event->message.status, MIDI_STATUS_NOTE_OFF);
     EXPECT_EQ(event->message.channel, 0);
     EXPECT_EQ(event->message_meta, 0);
-    EXPECT_EQ(event->predelay.val, 96);
+    EXPECT_EQ(event->predelay, 96);
     EXPECT_FALSE(event->event.note.on);
     EXPECT_EQ(event->event.note.channel, 0);
     EXPECT_EQ(event->event.note.pitch, 60);
@@ -84,7 +84,7 @@ TEST(mtrk, mtrk_full_check)
     EXPECT_EQ(event->message.status, MIDI_STATUS_NOTE_ON);
     EXPECT_EQ(event->message.channel, 0);
     EXPECT_EQ(event->message_meta, 0);
-    EXPECT_EQ(event->predelay.val, 0);
+    EXPECT_EQ(event->predelay, 0);
     EXPECT_TRUE(event->event.note.on);
     EXPECT_EQ(event->event.note.channel, 0);
     EXPECT_EQ(event->event.note.pitch, 56);
@@ -95,7 +95,7 @@ TEST(mtrk, mtrk_full_check)
     EXPECT_EQ(event->message.status, MIDI_STATUS_NOTE_OFF);
     EXPECT_EQ(event->message.channel, 0);
     EXPECT_EQ(event->message_meta, 0);
-    EXPECT_EQ(event->predelay.val, 48);
+    EXPECT_EQ(event->predelay, 48);
     EXPECT_FALSE(event->event.note.on);
     EXPECT_EQ(event->event.note.channel, 0);
     EXPECT_EQ(event->event.note.pitch, 56);
@@ -106,7 +106,7 @@ TEST(mtrk, mtrk_full_check)
     EXPECT_EQ(event->message.status, MIDI_STATUS_NOTE_ON);
     EXPECT_EQ(event->message.channel, 0);
     EXPECT_EQ(event->message_meta, 0);
-    EXPECT_EQ(event->predelay.val, 0);
+    EXPECT_EQ(event->predelay, 0);
     EXPECT_TRUE(event->event.note.on);
     EXPECT_EQ(event->event.note.channel, 0);
     EXPECT_EQ(event->event.note.pitch, 60);
@@ -117,7 +117,7 @@ TEST(mtrk, mtrk_full_check)
     EXPECT_EQ(event->message.status, MIDI_STATUS_NOTE_OFF);
     EXPECT_EQ(event->message.channel, 0);
     EXPECT_EQ(event->message_meta, 0);
-    EXPECT_EQ(event->predelay.val, 48);
+    EXPECT_EQ(event->predelay, 48);
     EXPECT_FALSE(event->event.note.on);
     EXPECT_EQ(event->event.note.channel, 0);
     EXPECT_EQ(event->event.note.pitch, 60);
@@ -128,7 +128,7 @@ TEST(mtrk, mtrk_full_check)
     EXPECT_EQ(event->message.status, MIDI_STATUS_NOTE_ON);
     EXPECT_EQ(event->message.channel, 0);
     EXPECT_EQ(event->message_meta, 0);
-    EXPECT_EQ(event->predelay.val, 0);
+    EXPECT_EQ(event->predelay, 0);
     EXPECT_TRUE(event->event.note.on);
     EXPECT_EQ(event->event.note.channel, 0);
     EXPECT_EQ(event->event.note.pitch, 55);
@@ -139,8 +139,7 @@ TEST(mtrk, mtrk_full_check)
     EXPECT_EQ(event->message.status, MIDI_STATUS_NOTE_OFF);
     EXPECT_EQ(event->message.channel, 0);
     EXPECT_EQ(event->message_meta, 0);
-
-    EXPECT_EQ(event->predelay.val, 240);
+    EXPECT_EQ(event->predelay, 240);
     EXPECT_FALSE(event->event.note.on);
     EXPECT_EQ(event->event.note.channel, 0);
     EXPECT_EQ(event->event.note.pitch, 55);
@@ -151,7 +150,7 @@ TEST(mtrk, mtrk_full_check)
     EXPECT_EQ(event->message.status, MIDI_STATUS_NOTE_ON);
     EXPECT_EQ(event->message.channel, 0);
     EXPECT_EQ(event->message_meta, 0);
-    EXPECT_EQ(event->predelay.val, 0);
+    EXPECT_EQ(event->predelay, 0);
     EXPECT_TRUE(event->event.note.on);
     EXPECT_EQ(event->event.note.channel, 0);
     EXPECT_EQ(event->event.note.pitch, 56);
@@ -162,7 +161,7 @@ TEST(mtrk, mtrk_full_check)
     EXPECT_EQ(event->message.status, MIDI_STATUS_NOTE_OFF);
     EXPECT_EQ(event->message.channel, 0);
     EXPECT_EQ(event->message_meta, 0);
-    EXPECT_EQ(event->predelay.val, 48);
+    EXPECT_EQ(event->predelay, 48);
     EXPECT_FALSE(event->event.note.on);
     EXPECT_EQ(event->event.note.channel, 0);
     EXPECT_EQ(event->event.note.pitch, 56);
@@ -173,5 +172,5 @@ TEST(mtrk, mtrk_full_check)
     EXPECT_EQ(event->message.status, MIDI_STATUS_SYSTEM);
     EXPECT_EQ(event->message.system, MIDI_STATUS_SYSTEM_RESET_OR_META);
     EXPECT_EQ(event->message_meta, MIDI_META_EVENT_TRACK_END);
-    EXPECT_EQ(event->predelay.val, 64);
+    EXPECT_EQ(event->predelay, 64);
 }
