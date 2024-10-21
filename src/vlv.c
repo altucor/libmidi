@@ -35,29 +35,26 @@ void vlv_set_value(vlv_t *ctx, const uint32_t val)
     ctx->val = val;
     if ((ctx->val & 0xFE00000) != 0)
     {
-        ctx->counter = 0;
+        ctx->counter = (MIDI_VLV_MAX_SIZE - 4);
         return;
     }
     if ((ctx->val & 0x1FC000) != 0)
     {
-        ctx->counter = 1;
+        ctx->counter = (MIDI_VLV_MAX_SIZE - 3);
         return;
     }
     if ((ctx->val & 0x3F80) != 0)
     {
-        ctx->counter = 2;
+        ctx->counter = (MIDI_VLV_MAX_SIZE - 2);
         return;
     }
-    if ((ctx->val & 0x7F) != 0)
-    {
-        ctx->counter = 3;
-        return;
-    }
+
+    ctx->counter = (MIDI_VLV_MAX_SIZE - 1);
 }
 
 bool vlv_can_fetch(vlv_t *ctx)
 {
-    return ctx->counter <= 3 && ctx->val != 0;
+    return ctx->counter <= (MIDI_VLV_MAX_SIZE - 1) && ctx->val != 0;
 }
 
 uint8_t vlv_fetch(vlv_t *ctx)

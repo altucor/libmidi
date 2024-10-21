@@ -108,6 +108,12 @@ TEST(vlv, vlv_fetch_2)
 {
     vlv_t ctx = {0};
 
+    vlv_set_value(&ctx, 0x00);
+    EXPECT_FALSE(vlv_can_fetch(&ctx));
+    EXPECT_EQ(vlv_fetch(&ctx), 0x00);
+    EXPECT_FALSE(vlv_can_fetch(&ctx));
+
+    vlv_reset(&ctx);
     vlv_set_value(&ctx, 0x7F);
     EXPECT_TRUE(vlv_can_fetch(&ctx));
     EXPECT_EQ(vlv_fetch(&ctx), 0x7F);
