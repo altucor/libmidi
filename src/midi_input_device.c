@@ -23,14 +23,13 @@ void midi_input_device_reset(midi_input_device_t *ctx)
 {
     ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
     midi_event_smf_reset(&ctx->event_smf);
-    buffer_reset(ctx->payload);
+    buffer_reset(&ctx->buffer);
     vlv_reset(&ctx->vlv);
 }
 
 midi_input_device_t *midi_input_device_new(bool smf)
 {
     midi_input_device_t *ctx = calloc(1, sizeof(midi_input_device_t));
-    ctx->payload = buffer_new();
     init_handlers(ctx);
     midi_input_device_reset(ctx);
     ctx->smf = smf;
@@ -43,7 +42,6 @@ void midi_input_device_free(midi_input_device_t *ctx)
     {
         return;
     }
-    buffer_free(ctx->payload);
     free(ctx);
 }
 
@@ -72,7 +70,7 @@ void notify_watchers_system(midi_input_device_t *ctx)
     case MIDI_META_EVENT_CUE_POINT:
     case MIDI_META_EVENT_PROGRAM_PATCH_NAME:
     case MIDI_META_EVENT_DEVICE_PORT_NAME:
-        midi_text_event_unmarshal(&ctx->event_smf.event.meta.text, ctx->payload->data, ctx->payload->size);
+        midi_text_event_unmarshal(&ctx->event_smf.event.meta.text, ctx->buffer.data, ctx->buffer.expected_size);
         break;
     case MIDI_META_EVENT_MIDI_CHANNEL:
         break;
@@ -84,7 +82,7 @@ void notify_watchers_system(midi_input_device_t *ctx)
     case MIDI_META_EVENT_M_LIVE_TAG:
         break;
     case MIDI_META_EVENT_TEMPO: {
-        midi_tempo_unmarshal(&ctx->event_smf.event.meta.tempo, ctx->payload->data, ctx->payload->size);
+        midi_tempo_unmarshal(&ctx->event_smf.event.meta.tempo, ctx->buffer.data, ctx->buffer.expected_size);
         if (ctx->listener->tempo != NULL)
         {
             ctx->listener->tempo(ctx->listener->handle, ctx->event_smf.event.meta.tempo);
@@ -94,7 +92,7 @@ void notify_watchers_system(midi_input_device_t *ctx)
     case MIDI_META_EVENT_SMPTE_OFFSET:
         break;
     case MIDI_META_EVENT_TIME_SIGNATURE:
-        midi_time_signature_unmarshal(&ctx->event_smf.event.meta.time_signature, ctx->payload->data, ctx->payload->size);
+        midi_time_signature_unmarshal(&ctx->event_smf.event.meta.time_signature, ctx->buffer.data, ctx->buffer.expected_size);
         break;
     case MIDI_META_EVENT_KEY_SIGNATURE:
         break;
@@ -105,7 +103,7 @@ void notify_watchers_system(midi_input_device_t *ctx)
     }
     if (ctx->listener->event != NULL)
     {
-        ctx->listener->event(ctx->listener->handle, ctx->event_smf.message, ctx->event_smf.message_meta, ctx->event_smf.event);
+        ctx->listener->event(ctx->listener->handle, ctx->event_smf.message, ctx->event_smf.message_meta, &ctx->event_smf.event);
     }
 }
 
@@ -119,7 +117,7 @@ void notify_watchers(midi_input_device_t *ctx)
     {
     case MIDI_STATUS_NOTE_OFF:
     case MIDI_STATUS_NOTE_ON: {
-        midi_note_unmarshal(&ctx->event_smf.event.note, ctx->event_smf.message, ctx->payload->data, ctx->payload->size);
+        midi_note_unmarshal(&ctx->event_smf.event.note, ctx->event_smf.message, ctx->buffer.data, ctx->buffer.expected_size);
         if (ctx->listener->note != NULL)
         {
             ctx->listener->note(ctx->listener->handle, ctx->event_smf.event.note);
@@ -127,7 +125,7 @@ void notify_watchers(midi_input_device_t *ctx)
         break;
     }
     case MIDI_STATUS_KEY_PRESSURE: {
-        midi_key_pressure_unmarshal(&ctx->event_smf.event.key_pressure, ctx->event_smf.message, ctx->payload->data, ctx->payload->size);
+        midi_key_pressure_unmarshal(&ctx->event_smf.event.key_pressure, ctx->event_smf.message, ctx->buffer.data, ctx->buffer.expected_size);
         if (ctx->listener->key_pressure != NULL)
         {
             ctx->listener->key_pressure(ctx->listener->handle, ctx->event_smf.event.key_pressure);
@@ -135,7 +133,7 @@ void notify_watchers(midi_input_device_t *ctx)
         break;
     }
     case MIDI_STATUS_CONTROLLER_CHANGE: {
-        midi_control_unmarshal(&ctx->event_smf.event.control, ctx->event_smf.message, ctx->payload->data, ctx->payload->size);
+        midi_control_unmarshal(&ctx->event_smf.event.control, ctx->event_smf.message, ctx->buffer.data, ctx->buffer.expected_size);
         if (ctx->listener->control != NULL)
         {
             ctx->listener->control(ctx->listener->handle, ctx->event_smf.event.control);
@@ -143,7 +141,7 @@ void notify_watchers(midi_input_device_t *ctx)
         break;
     }
     case MIDI_STATUS_PITCH_BEND: {
-        midi_pitch_unmarshal(&ctx->event_smf.event.pitch, ctx->event_smf.message, ctx->payload->data, ctx->payload->size);
+        midi_pitch_unmarshal(&ctx->event_smf.event.pitch, ctx->event_smf.message, ctx->buffer.data, ctx->buffer.expected_size);
         if (ctx->listener->pitch != NULL)
         {
             ctx->listener->pitch(ctx->listener->handle, ctx->event_smf.event.pitch);
@@ -151,7 +149,7 @@ void notify_watchers(midi_input_device_t *ctx)
         break;
     }
     case MIDI_STATUS_PROGRAM_CHANGE: {
-        midi_program_change_unmarshal(&ctx->event_smf.event.program_change, ctx->event_smf.message, ctx->payload->data, ctx->payload->size);
+        midi_program_change_unmarshal(&ctx->event_smf.event.program_change, ctx->event_smf.message, ctx->buffer.data, ctx->buffer.expected_size);
         if (ctx->listener->program_change != NULL)
         {
             ctx->listener->program_change(ctx->listener->handle, ctx->event_smf.event.program_change);
@@ -159,7 +157,7 @@ void notify_watchers(midi_input_device_t *ctx)
         break;
     }
     case MIDI_STATUS_CHANNEL_PRESSURE: {
-        midi_channel_pressure_unmarshal(&ctx->event_smf.event.channel_pressure, ctx->event_smf.message, ctx->payload->data, ctx->payload->size);
+        midi_channel_pressure_unmarshal(&ctx->event_smf.event.channel_pressure, ctx->event_smf.message, ctx->buffer.data, ctx->buffer.expected_size);
         if (ctx->listener->channel_pressure != NULL)
         {
             ctx->listener->channel_pressure(ctx->listener->handle, ctx->event_smf.event.channel_pressure);
@@ -173,7 +171,7 @@ void notify_watchers(midi_input_device_t *ctx)
     }
     if (ctx->listener->event != NULL)
     {
-        ctx->listener->event(ctx->listener->handle, ctx->event_smf.message, ctx->event_smf.message_meta, ctx->event_smf.event);
+        ctx->listener->event(ctx->listener->handle, ctx->event_smf.message, ctx->event_smf.message_meta, &ctx->event_smf.event);
     }
 }
 
@@ -185,7 +183,7 @@ void handle_system_meta_event_payload_size(midi_input_device_t *ctx, const uint8
         ctx->event_smf.meta_length = vlv_get_value(&ctx->vlv);
         if (ctx->event_smf.meta_length != 0)
         {
-            buffer_realloc(ctx->payload, ctx->event_smf.meta_length);
+            buffer_set_expected_size(&ctx->buffer, ctx->event_smf.meta_length);
             ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
             return;
         }
@@ -225,7 +223,7 @@ void handle_system_meta_event(midi_input_device_t *ctx, const uint8_t b)
         ctx->state = MIDI_INPUT_STATE_READ_META_PAYLOAD_SIZE;
         ctx->event_smf.meta_length = 0;
         vlv_reset(&ctx->vlv);
-        buffer_reset(ctx->payload);
+        buffer_reset(&ctx->buffer);
         break;
     default:
         break;
@@ -241,12 +239,12 @@ void handle_system_status(midi_input_device_t *ctx, const uint8_t b)
         break;
     case MIDI_STATUS_SYSTEM_SONG_POSITION:
         // 2 bytes payload
-        buffer_realloc(ctx->payload, 2);
+        buffer_set_expected_size(&ctx->buffer, 2);
         ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
         break;
     case MIDI_STATUS_SYSTEM_SONG_SELECT:
         // 1 byte payload
-        buffer_realloc(ctx->payload, 1);
+        buffer_set_expected_size(&ctx->buffer, 1);
         ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
         break;
     case MIDI_STATUS_SYSTEM_RESET_OR_META:
@@ -267,12 +265,12 @@ void handle_new_status(midi_input_device_t *ctx, const uint8_t b)
     case MIDI_STATUS_KEY_PRESSURE:
     case MIDI_STATUS_CONTROLLER_CHANGE:
     case MIDI_STATUS_PITCH_BEND:
-        buffer_realloc(ctx->payload, 2);
+        buffer_set_expected_size(&ctx->buffer, 2);
         ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
         break;
     case MIDI_STATUS_PROGRAM_CHANGE:
     case MIDI_STATUS_CHANNEL_PRESSURE:
-        buffer_realloc(ctx->payload, 1);
+        buffer_set_expected_size(&ctx->buffer, 1);
         ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
         break;
     case MIDI_STATUS_SYSTEM:
@@ -327,8 +325,8 @@ void handle_ready_to_new(midi_input_device_t *ctx, const uint8_t b)
 
 void handle_read_payload(midi_input_device_t *ctx, const uint8_t b)
 {
-    buffer_append_u8(ctx->payload, b);
-    if (buffer_space_left(ctx->payload) == 0)
+    buffer_append_u8(&ctx->buffer, b);
+    if (buffer_space_left(&ctx->buffer) == 0)
     {
         notify_watchers(ctx);
         ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;

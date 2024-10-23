@@ -9,42 +9,19 @@ void buffer_reset(buffer_t *ctx)
     {
         return;
     }
-    ctx->size = 0;
+    ctx->expected_size = 0;
     ctx->iterator_write = 0;
-    ctx->iterator_read = 0;
-    if (ctx->data != NULL)
-    {
-        free(ctx->data);
-        ctx->data = NULL;
-    }
 }
 
-buffer_t *buffer_new()
+void buffer_set_expected_size(buffer_t *ctx, const uint32_t size)
 {
-    buffer_t *ctx = calloc(1, sizeof(buffer_t));
-    buffer_reset(ctx);
-    return ctx;
-}
-
-void buffer_free(buffer_t *ctx)
-{
-    if (ctx == NULL)
+    if (ctx == NULL || size > BUFFER_SIZE)
     {
         return;
     }
-    if (ctx->data != NULL)
-    {
-        free(ctx->data);
-        ctx->data = NULL;
-    }
-    free(ctx);
-}
-
-void buffer_realloc(buffer_t *ctx, const uint32_t size)
-{
     buffer_reset(ctx);
-    ctx->size = size;
-    ctx->data = malloc(size);
+    ctx->expected_size = size;
+    // TODO: Maybe overwrite with zero whole buffer
 }
 
 uint32_t buffer_space_left(buffer_t *ctx)
@@ -53,16 +30,12 @@ uint32_t buffer_space_left(buffer_t *ctx)
     {
         return 0;
     }
-    return ctx->size - ctx->iterator_write;
+    return ctx->expected_size - ctx->iterator_write;
 }
 
 void buffer_append_u8(buffer_t *ctx, const uint8_t b)
 {
-    if (ctx == NULL)
-    {
-        return;
-    }
-    if (ctx->iterator_write >= ctx->size)
+    if (ctx == NULL || ctx->iterator_write >= ctx->expected_size)
     {
         return;
     }

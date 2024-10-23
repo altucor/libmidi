@@ -9,6 +9,5 @@ TEST(text, midi_text_event_unmarshal)
     uint32_t iterator = 0;
 
     EXPECT_EQ(midi_text_event_unmarshal(&ctx, reinterpret_cast<uint8_t *>(src.data()), src.size()), src.size());
-    EXPECT_STREQ(ctx.val, src.c_str());
-    free(ctx.val);
+    EXPECT_STREQ(ctx.data, src.c_str());
 }

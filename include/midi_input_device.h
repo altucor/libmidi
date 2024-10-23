@@ -4,13 +4,16 @@
 #include "protocol.h"
 
 #include "buffer.h"
+
 #include "event.h"
 #include "vlv.h"
 
 #include <stdbool.h>
 
+#define MIDI_INPUT_DEVICE_BUFFER_SIZE (1024)
+
 typedef void(midi_cb_error_f)(void *ctx, midi_error_e err);
-typedef void(midi_cb_event_f)(void *ctx, midi_cmd_t msg, uint8_t message_meta, midi_event_t event);
+typedef void(midi_cb_event_f)(void *ctx, midi_cmd_t msg, uint8_t message_meta, midi_event_t *event);
 typedef void(midi_cb_note_f)(void *ctx, midi_note_t note);
 typedef void(midi_cb_key_pressure_f)(void *ctx, midi_key_pressure_t pressure);
 typedef void(midi_cb_control_f)(void *ctx, midi_control_t control);
@@ -59,7 +62,7 @@ typedef struct _midi_input_device
     midi_input_state_t state;
     midi_event_smf_t event_smf;
     vlv_t vlv;
-    buffer_t *payload;
+    buffer_t buffer;
 } midi_input_device_t;
 
 #ifdef __cplusplus

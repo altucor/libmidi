@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void mtrk_handle_event(mtrk_t *ctx, midi_cmd_t msg, uint8_t message_meta, midi_event_t event)
+void mtrk_handle_event(mtrk_t *ctx, midi_cmd_t msg, uint8_t message_meta, midi_event_t *event)
 {
     if (ctx->events_count == 0)
     {
@@ -16,13 +16,7 @@ void mtrk_handle_event(mtrk_t *ctx, midi_cmd_t msg, uint8_t message_meta, midi_e
         ctx->events = realloc(ctx->events, sizeof(midi_event_smf_t) * (ctx->events_count + 1));
     }
 
-    midi_event_smf_t *smf_event = midi_event_smf_new();
-
-    // TODO: remove midi_input_device_get_predelay and get predelay from "midi_event_t"
-    smf_event->predelay = midi_input_device_get_predelay(ctx->device);
-    smf_event->message = msg;
-    smf_event->message_meta = message_meta;
-    smf_event->event = event;
+    midi_event_smf_t *smf_event = midi_event_smf_new_from(midi_input_device_get_predelay(ctx->device), msg, message_meta, event);
     ctx->events[ctx->events_count] = smf_event;
     ctx->events_count++;
 }

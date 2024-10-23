@@ -3,6 +3,16 @@
 #include <memory.h>
 #include <stdlib.h>
 
+void midi_text_event_free_data(midi_text_event_t *ctx)
+{
+    if (ctx == NULL || !ctx->size || ctx->data == NULL)
+    {
+        return;
+    }
+
+    free(ctx->data);
+}
+
 int midi_text_event_unmarshal(midi_text_event_t *ctx, uint8_t *data, uint32_t size)
 {
     // FF 0X XX cc cc cc...
@@ -11,9 +21,13 @@ int midi_text_event_unmarshal(midi_text_event_t *ctx, uint8_t *data, uint32_t si
     {
         return iterator;
     }
-    ctx->val = malloc(size + 1);
-    memcpy(ctx->val, data, size);
-    ctx->val[size] = 0x00;
+    ctx->size = size;
+    ctx->data = (char *)data;
     iterator += size;
     return iterator;
+}
+
+void midi_text_event_copy(midi_text_event_t *dst, midi_text_event_t *src)
+{
+    memcpy(dst->data, src->data, src->size);
 }

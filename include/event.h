@@ -40,6 +40,7 @@ extern "C" {
 
 void midi_event_smf_reset(midi_event_smf_t *ctx);
 midi_event_smf_t *midi_event_smf_new();
+midi_event_smf_t *midi_event_smf_new_from(const uint32_t predelay, midi_cmd_t msg, uint8_t message_meta, midi_event_t *event);
 void midi_event_smf_free(midi_event_smf_t *ctx);
 
 #ifdef __cplusplus
