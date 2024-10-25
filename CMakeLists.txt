@@ -4,32 +4,37 @@ project(midi C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
-IF(MSVC)
+if(MSVC)
     add_definitions(-DOS_WINDOWS)
     add_definitions(-DPLATFORM_X86_64)
     add_definitions(-D_USE_MATH_DEFINES)
-ELSEIF(APPLE)
+elseif(APPLE)
     add_definitions(-DOS_OSX)
     add_definitions(-DPLATFORM_X86_64)
-ELSEIF(UNIX)
+elseif(UNIX)
     add_definitions(-DOS_LINUX)
     add_definitions(-DPLATFORM_X86_64)
-ENDIF()
+endif()
 
-IF(CMAKE_BUILD_TYPE MATCHES Debug)
+if(CMAKE_BUILD_TYPE MATCHES Debug)
     message("Debug build.")
-ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
+elseif(CMAKE_BUILD_TYPE MATCHES Release)
     message("Release build.")
-ELSE()
+else()
     message(" ! ! ! Unknown build type.")
-ENDIF()
+endif()
 
 file(GLOB_RECURSE ${PROJECT_NAME}_SOURCES "src/**.c")
 
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_compile_options(${PROJECT_NAME} PRIVATE
+    $<$<COMPILE_LANGUAGE:CXX>:-Werror> # GCC/Clang
+    $<$<COMPILE_LANGUAGE:C>:-Werror> # GCC/Clang for C files
+    $<$<CXX_COMPILER_ID:MSVC>:/WX> # MSVC equivalent
+)
 
 # Optionally enable testing
 option(ENABLE_TESTING "Enable unit testing" ON)
@@ -39,10 +44,12 @@ if(ENABLE_TESTING)
     add_subdirectory(tests)
 endif()
 
-if(CODE_COVERAGE)
-    add_custom_target(coverage
-        COMMAND ./my_tests
-        COMMAND lcov --capture --directory . --output-file coverage.info
-        COMMAND genhtml coverage.info --output-directory out
-    )
+option(ENABLE_MEMORY_LEAK_TESTING "Enable memory leak testing" ON)
+
+if(ENABLE_TESTING AND ENABLE_MEMORY_LEAK_TESTING)
+    if(APPLE)
+        add_custom_target(memory-leak-testing
+            COMMAND leaks --atExit -- ./tests/midi-tests
+        )
+    endif()
 endif()
