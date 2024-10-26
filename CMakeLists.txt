@@ -27,9 +27,10 @@ endif()
 
 file(GLOB_RECURSE ${PROJECT_NAME}_SOURCES "src/**.c")
 
-add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+add_library(${PROJECT_NAME} STATIC)
 
+target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_sources(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_SOURCES})
 target_compile_options(${PROJECT_NAME} PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-Werror> # GCC/Clang
     $<$<COMPILE_LANGUAGE:C>:-Werror> # GCC/Clang for C files
