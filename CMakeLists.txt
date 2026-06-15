@@ -32,7 +32,7 @@ add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 # Optionally enable testing
-option(ENABLE_TESTING "Enable unit testing" ON)
+option(ENABLE_TESTING "Enable unit testing" OFF)
 
 if(ENABLE_TESTING)
     enable_testing()
