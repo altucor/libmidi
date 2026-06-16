@@ -1,7 +1,7 @@
 #ifndef MIDI_PITCH_H
 #define MIDI_PITCH_H
 
-#include "protocol.h"
+#include "libmidi/protocol.h"
 
 #include <stdint.h>
 

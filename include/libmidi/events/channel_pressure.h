@@ -1,7 +1,7 @@
 #ifndef MIDI_CHANNEL_PRESSURE_H
 #define MIDI_CHANNEL_PRESSURE_H
 
-#include "protocol.h"
+#include "libmidi/protocol.h"
 
 typedef struct _channel_pressure
 {

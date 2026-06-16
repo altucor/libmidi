@@ -1,4 +1,4 @@
-#include "midi_input_device.h"
+#include "libmidi/midi_input_device.h"
 
 #include <stdlib.h>
 

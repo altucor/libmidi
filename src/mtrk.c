@@ -1,5 +1,5 @@
-#include "mtrk.h"
-#include "util.h"
+#include "libmidi/mtrk.h"
+#include "libmidi/util.h"
 
 #include <memory.h>
 #include <stdio.h>

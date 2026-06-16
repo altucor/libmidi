@@ -1,4 +1,4 @@
-#include "events/program_change.h"
+#include "libmidi/events/program_change.h"
 
 int midi_program_change_unmarshal(midi_program_change_t *ctx, midi_cmd_t cmd, uint8_t *data, uint32_t size)
 {

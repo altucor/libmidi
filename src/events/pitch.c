@@ -1,6 +1,6 @@
-#include "events/pitch.h"
+#include "libmidi/events/pitch.h"
 
-#include "protocol.h"
+#include "libmidi/protocol.h"
 
 #include <stdio.h>
 

@@ -26,9 +26,69 @@ ELSE()
     message(" ! ! ! Unknown build type.")
 ENDIF()
 
-file(GLOB_RECURSE ${PROJECT_NAME}_SOURCES "src/**.c")
+add_library(${PROJECT_NAME} STATIC)
 
-add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    C_STANDARD 23
+    C_STANDARD_REQUIRED ON
+    CXX_STANDARD 23
+    CXX_STANDARD_REQUIRED ON
+    LINKER_LANGUAGE C
+)
+
+target_sources(${PROJECT_NAME}
+    PUBLIC
+
+    src/buffer.c
+    src/event.c
+    src/file.c
+    src/midi_input_device.c
+    src/mthd.c
+    src/mtrk.c
+    src/util.c
+    src/vlv.c
+
+    src/events/note.c
+    src/events/pitch.c
+    src/events/program_change.c
+    src/events/control.c
+    src/events/channel_pressure.c
+    src/events/key_pressure.c
+
+    src/events/meta/tempo.c
+    src/events/meta/text.c
+    src/events/meta/time_signature.c
+
+    PUBLIC
+    FILE_SET HEADERS
+    BASE_DIRS
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    FILES
+
+    include/libmidi/protocol.h
+    include/libmidi/errors.h
+    include/libmidi/buffer.h
+    include/libmidi/util.h
+    include/libmidi/vlv.h
+    include/libmidi/event.h
+    include/libmidi/mtrk.h
+    include/libmidi/mthd.h
+    include/libmidi/file.h
+    include/libmidi/midi_input_device.h
+
+    include/libmidi/events/note.h
+    include/libmidi/events/pitch.h
+    include/libmidi/events/program_change.h
+    include/libmidi/events/meta.h
+    include/libmidi/events/key_pressure.h
+    include/libmidi/events/control.h
+    include/libmidi/events/channel_pressure.h
+
+    include/libmidi/events/meta/tempo.h
+    include/libmidi/events/meta/text.h
+    include/libmidi/events/meta/time_signature.h
+)
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 # Optionally enable testing

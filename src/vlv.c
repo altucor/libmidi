@@ -1,4 +1,4 @@
-#include "vlv.h"
+#include "libmidi/vlv.h"
 
 #include <stdio.h>
 

@@ -1,7 +1,7 @@
 #ifndef MIDI_NOTE_H
 #define MIDI_NOTE_H
 
-#include "protocol.h"
+#include "libmidi/protocol.h"
 
 #include <stdbool.h>
 #include <stdint.h>

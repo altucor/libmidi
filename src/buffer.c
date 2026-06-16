@@ -1,4 +1,4 @@
-#include "buffer.h"
+#include "libmidi/buffer.h"
 
 #include <memory.h>
 #include <stdlib.h>
@@ -39,5 +39,6 @@ void buffer_append_u8(buffer_t *ctx, const uint8_t b)
     {
         return;
     }
+
     ctx->data[ctx->iterator_write++] = b;
 }

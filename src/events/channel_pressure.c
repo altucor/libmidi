@@ -1,4 +1,4 @@
-#include "events/channel_pressure.h"
+#include "libmidi/events/channel_pressure.h"
 
 int midi_channel_pressure_unmarshal(midi_channel_pressure_t *ctx, midi_cmd_t cmd, uint8_t *data, uint32_t size)
 {

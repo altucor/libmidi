@@ -1,5 +1,5 @@
-#include "events/note.h"
-#include "util.h"
+#include "libmidi/events/note.h"
+#include "libmidi/util.h"
 
 #include <stdio.h>
 

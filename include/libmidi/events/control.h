@@ -1,7 +1,8 @@
 #ifndef MIDI_CONTROL_H
 #define MIDI_CONTROL_H
 
-#include "protocol.h"
+#include "libmidi/protocol.h"
+
 #include <stdint.h>
 
 typedef struct _midi_control

@@ -1,4 +1,4 @@
-#include "file.h"
+#include "libmidi/file.h"
 
 #include <stdio.h>
 #include <stdlib.h>

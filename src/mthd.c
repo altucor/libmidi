@@ -1,5 +1,5 @@
-#include "mthd.h"
-#include "util.h"
+#include "libmidi/mthd.h"
+#include "libmidi/util.h"
 
 #include <memory.h>
 #include <stdio.h>

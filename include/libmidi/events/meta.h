@@ -1,9 +1,9 @@
 #ifndef MIDI_EVENT_META_H
 #define MIDI_EVENT_META_H
 
-#include "meta/tempo.h"
-#include "meta/text.h"
-#include "meta/time_signature.h"
+#include "libmidi/events/meta/tempo.h"
+#include "libmidi/events/meta/text.h"
+#include "libmidi/events/meta/time_signature.h"
 
 typedef union _midi_event_meta {
     midi_tempo_t tempo;

@@ -1,7 +1,7 @@
-#include "event.h"
+#include "libmidi/event.h"
 
-#include "events/meta.h"
-#include "util.h"
+#include "libmidi/events/meta.h"
+#include "libmidi/util.h"
 
 #include <memory.h>
 #include <stdlib.h>

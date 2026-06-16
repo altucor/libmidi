@@ -1,7 +1,7 @@
 #ifndef MIDI_KEY_PRESSURE_H
 #define MIDI_KEY_PRESSURE_H
 
-#include "protocol.h"
+#include "libmidi/protocol.h"
 
 typedef struct _key_pressure
 {

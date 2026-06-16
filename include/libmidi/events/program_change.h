@@ -1,7 +1,7 @@
 #ifndef MIDI_PROGRAM_CHANGE_H
 #define MIDI_PROGRAM_CHANGE_H
 
-#include "protocol.h"
+#include "libmidi/protocol.h"
 
 typedef struct _program_change
 {

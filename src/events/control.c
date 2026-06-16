@@ -1,6 +1,7 @@
-#include "events/control.h"
+#include "libmidi/events/control.h"
 
-#include "protocol.h"
+#include "libmidi/protocol.h"
+
 #include <stdio.h>
 
 void midi_control_reset(midi_control_t *ctx)

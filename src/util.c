@@ -1,6 +1,6 @@
 #include "util.h"
 
-#include "protocol.h"
+#include "libmidi/protocol.h"
 
 #include <memory.h>
 #include <stdlib.h>
