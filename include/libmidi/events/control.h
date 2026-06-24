@@ -19,7 +19,6 @@ extern "C"
 
 void midi_control_reset(midi_control_t* ctx);
 int midi_control_unmarshal(midi_control_t* ctx, midi_cmd_t cmd, uint8_t* data, uint32_t size);
-void midi_control_to_str(midi_control_t* ctx, char* data, uint32_t size);
 
 #ifdef __cplusplus
 }

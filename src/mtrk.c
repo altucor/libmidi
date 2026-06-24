@@ -2,7 +2,6 @@
 #include "libmidi/util.h"
 
 #include <memory.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 void mtrk_handle_event(mtrk_t* ctx, midi_cmd_t msg, uint8_t message_meta, midi_event_t* event)

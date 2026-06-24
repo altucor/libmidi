@@ -2,7 +2,6 @@
 #include "libmidi/util.h"
 
 #include <memory.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 mthd_t* mthd_new()

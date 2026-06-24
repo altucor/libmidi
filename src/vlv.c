@@ -1,7 +1,5 @@
 #include "libmidi/vlv.h"
 
-#include <stdio.h>
-
 void vlv_reset(vlv_t* ctx)
 {
     ctx->counter = 0;

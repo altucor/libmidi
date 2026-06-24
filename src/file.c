@@ -1,6 +1,5 @@
 #include "libmidi/file.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 midi_file_t* midi_file_new()

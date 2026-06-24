@@ -16,7 +16,6 @@ extern "C"
 #endif
 
 int midi_key_pressure_unmarshal(midi_key_pressure_t* ctx, midi_cmd_t cmd, uint8_t* data, uint32_t size);
-void midi_key_pressure_to_str(midi_key_pressure_t* ctx, char* data, uint32_t size);
 
 #ifdef __cplusplus
 }
