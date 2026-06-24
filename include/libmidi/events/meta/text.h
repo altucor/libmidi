@@ -6,16 +6,17 @@
 typedef struct text_event
 {
     uint32_t size;
-    char *data;
+    char* data;
 } midi_text_event_t;
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-void midi_text_event_free_data(midi_text_event_t *ctx);
-int midi_text_event_unmarshal(midi_text_event_t *ctx, uint8_t *data, uint32_t size);
-void midi_text_event_copy(midi_text_event_t *dst, midi_text_event_t *src);
+void midi_text_event_free_data(midi_text_event_t* ctx);
+int midi_text_event_unmarshal(midi_text_event_t* ctx, uint8_t* data, uint32_t size);
+void midi_text_event_copy(midi_text_event_t* dst, midi_text_event_t* src);
 
 #ifdef __cplusplus
 }

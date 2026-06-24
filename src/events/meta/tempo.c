@@ -1,6 +1,6 @@
 #include "libmidi/events/meta/tempo.h"
 
-int midi_tempo_unmarshal(midi_tempo_t *ctx, uint8_t *data, uint32_t size)
+int midi_tempo_unmarshal(midi_tempo_t* ctx, uint8_t* data, uint32_t size)
 {
     // FF 51 03 tt tt tt
     uint32_t iterator = 0;

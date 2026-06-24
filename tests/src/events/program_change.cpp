@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "events/program_change.h"
+#include "libmidi/events/program_change.h"
 
 #include <array>
 

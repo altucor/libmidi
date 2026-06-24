@@ -1,6 +1,6 @@
 #include "libmidi/events/channel_pressure.h"
 
-int midi_channel_pressure_unmarshal(midi_channel_pressure_t *ctx, midi_cmd_t cmd, uint8_t *data, uint32_t size)
+int midi_channel_pressure_unmarshal(midi_channel_pressure_t* ctx, midi_cmd_t cmd, uint8_t* data, uint32_t size)
 {
     if (cmd.status != MIDI_STATUS_CHANNEL_PRESSURE)
     {

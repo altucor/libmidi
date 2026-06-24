@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "protocol.h"
-#include "vlv.h"
+#include "libmidi/protocol.h"
+#include "libmidi/vlv.h"
 
 #include <array>
 

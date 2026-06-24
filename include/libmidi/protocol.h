@@ -1,10 +1,10 @@
 #ifndef MIDI_PROTOCOL_H
 #define MIDI_PROTOCOL_H
 
+#include "libmidi/errors.h"
+
 #include <stdbool.h>
 #include <stdint.h>
-
-#include "errors.h"
 
 #define MIDI_NOTES_IN_OCTAVE (12)
 #define MIDI_CHANNELS_MAX_COUNT (16)
@@ -16,9 +16,9 @@
 #define MIDI_CHECK_NEW_MESSAGE(in) (((in) & MIDI_MASK_NEW_MESSAGE_BYTE) == MIDI_MASK_NEW_MESSAGE_BYTE)
 #define MIDI_CHECK_DATA(in) (!MIDI_CHECK_NEW_MESSAGE((in)))
 
-#define MIDI_CHECK_DATA_OR_FAIL(in, out)                                                                                                                           \
-    if (!MIDI_CHECK_DATA((in)))                                                                                                                                    \
-        return MIDI_ERROR_NOT_DATA;                                                                                                                                \
+#define MIDI_CHECK_DATA_OR_FAIL(in, out)                                                                               \
+    if (!MIDI_CHECK_DATA((in)))                                                                                        \
+        return MIDI_ERROR_NOT_DATA;                                                                                    \
     (out) = (in);
 
 #define MIDI_VLV_MAX_SIZE (sizeof(uint32_t))
@@ -27,19 +27,21 @@
 // 0b 00001111 11111111 11111111 11111111 - 0x0FFF FFFF - maximum uint32_t value bit mask
 // ---------------^ this one MSB start
 #define MIDI_VLV_MSB_BIT_START (21)
-#define MIDI_VLV_GET_BIT_SHIFT_FROM_COUNTER(byte_index) (MIDI_VLV_MSB_BIT_START - (MIDI_VLV_BYTE_SIZE_IN_BITS * byte_index))
-#define MIDI_VLV_EXTRACT_BYTE_AT_INDEX(val, byte_index)                                                                                                            \
-    (val & (MIDI_MASK_DATA << MIDI_VLV_GET_BIT_SHIFT_FROM_COUNTER(byte_index))) >> (MIDI_VLV_GET_BIT_SHIFT_FROM_COUNTER(byte_index))
+#define MIDI_VLV_GET_BIT_SHIFT_FROM_COUNTER(byte_index)                                                                \
+    (MIDI_VLV_MSB_BIT_START - (MIDI_VLV_BYTE_SIZE_IN_BITS * byte_index))
+#define MIDI_VLV_EXTRACT_BYTE_AT_INDEX(val, byte_index)                                                                \
+    (val & (MIDI_MASK_DATA << MIDI_VLV_GET_BIT_SHIFT_FROM_COUNTER(byte_index))) >>                                     \
+        (MIDI_VLV_GET_BIT_SHIFT_FROM_COUNTER(byte_index))
 
 #define MTHD_MARKER_SIZE (4)
 #define MTRK_MARKER_SIZE (4)
 
-const static char *mthd_header_reference = "MThd";
-const static char *mtrk_header_reference = "MTrk";
+const static char* k_mthd_header_reference = "MThd";
+const static char* k_mtrk_header_reference = "MTrk";
 
 #define MIDI_TOTAL_MAPPED_OCTAVES (10)
 
-const static char *kNotesStr[] = {
+const static char* kNotesStr[] = {
     "C0", "C#0", "D0", "Eb0", "E0", "F0", "F#0", "G0", "G#0", "A0", "Bb0", "B0", /* #0 */
     "C1", "C#1", "D1", "Eb1", "E1", "F1", "F#1", "G1", "G#1", "A1", "Bb1", "B1", /* #1 */
     "C2", "C#2", "D2", "Eb2", "E2", "F2", "F#2", "G2", "G#2", "A2", "Bb2", "B2", /* #2 */
@@ -53,16 +55,26 @@ const static char *kNotesStr[] = {
 };
 
 const static float kNotesFreq[] = {
-    8.18f,    8.66f,    9.18f,    9.72f,    10.30f,   10.91f,   11.56f,   12.25f,   12.98f,   13.75f,  14.57f,   15.43f,   /* #0 */
-    16.35f,   17.32f,   18.35f,   19.45f,   20.60f,   21.83f,   23.12f,   24.50f,   25.96f,   27.50f,  29.14f,   30.87f,   /* #1 */
-    32.70f,   34.65f,   36.71f,   38.89f,   41.20f,   43.65f,   46.25f,   49.0f,    51.91f,   55.0f,   58.27f,   61.74f,   /* #2 */
-    65.41f,   69.30f,   73.42f,   77.78f,   82.41f,   87.31f,   92.50f,   98.0f,    103.83f,  110.0f,  116.54f,  123.47f,  /* #3 */
-    130.81f,  138.59f,  146.83f,  155.56f,  164.81f,  174.61f,  185.0f,   196.0f,   207.65f,  220.0f,  233.08f,  246.94f,  /* #4 */
-    261.63f,  277.18f,  293.66f,  311.13f,  329.63f,  349.23f,  369.99f,  392.0f,   415.30f,  440.0f,  466.16f,  493.88f,  /* #5 */
-    523.25f,  554.37f,  587.33f,  622.25f,  659.25f,  698.46f,  739.99f,  783.99f,  830.61f,  880.0f,  932.33f,  987.77f,  /* #6 */
-    1046.5f,  1108.73f, 1174.66f, 1244.51f, 1318.51f, 1396.91f, 1479.98f, 1567.98f, 1661.22f, 1760.0f, 1864.66f, 1975.53f, /* #7 */
-    2093.0f,  2217.46f, 2349.32f, 2489.02f, 2637.02f, 2793.83f, 2959.96f, 3135.96f, 3322.44f, 3520.0f, 3729.31f, 3951.07f, /* #8 */
-    4186.01f, 4434.92f, 4698.63f, 4978.03f, 5274.04f, 5587.65f, 5919.91f, 6271.93f, 6644.88f, 7040.0f, 7458.62f, 7902.13f  /* #9 */
+    8.18f,    8.66f,    9.18f,    9.72f,    10.30f,   10.91f,
+    11.56f,   12.25f,   12.98f,   13.75f,   14.57f,   15.43f, /* #0 */
+    16.35f,   17.32f,   18.35f,   19.45f,   20.60f,   21.83f,
+    23.12f,   24.50f,   25.96f,   27.50f,   29.14f,   30.87f, /* #1 */
+    32.70f,   34.65f,   36.71f,   38.89f,   41.20f,   43.65f,
+    46.25f,   49.0f,    51.91f,   55.0f,    58.27f,   61.74f, /* #2 */
+    65.41f,   69.30f,   73.42f,   77.78f,   82.41f,   87.31f,
+    92.50f,   98.0f,    103.83f,  110.0f,   116.54f,  123.47f, /* #3 */
+    130.81f,  138.59f,  146.83f,  155.56f,  164.81f,  174.61f,
+    185.0f,   196.0f,   207.65f,  220.0f,   233.08f,  246.94f, /* #4 */
+    261.63f,  277.18f,  293.66f,  311.13f,  329.63f,  349.23f,
+    369.99f,  392.0f,   415.30f,  440.0f,   466.16f,  493.88f, /* #5 */
+    523.25f,  554.37f,  587.33f,  622.25f,  659.25f,  698.46f,
+    739.99f,  783.99f,  830.61f,  880.0f,   932.33f,  987.77f, /* #6 */
+    1046.5f,  1108.73f, 1174.66f, 1244.51f, 1318.51f, 1396.91f,
+    1479.98f, 1567.98f, 1661.22f, 1760.0f,  1864.66f, 1975.53f, /* #7 */
+    2093.0f,  2217.46f, 2349.32f, 2489.02f, 2637.02f, 2793.83f,
+    2959.96f, 3135.96f, 3322.44f, 3520.0f,  3729.31f, 3951.07f, /* #8 */
+    4186.01f, 4434.92f, 4698.63f, 4978.03f, 5274.04f, 5587.65f,
+    5919.91f, 6271.93f, 6644.88f, 7040.0f,  7458.62f, 7902.13f /* #9 */
 };
 
 typedef enum _midi_status : uint8_t
@@ -121,7 +133,8 @@ typedef enum _midi_meta_event : uint8_t
     MIDI_META_EVENT_PROPRIETARY_EVENT = 0x7F,
 } midi_meta_event_e;
 
-typedef union _midi_cmd {
+typedef union _midi_cmd
+{
     uint8_t raw;
     struct
     {

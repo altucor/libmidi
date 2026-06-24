@@ -12,10 +12,11 @@ typedef struct time_signature
 } midi_time_signature_t;
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-int midi_time_signature_unmarshal(midi_time_signature_t *ctx, uint8_t *data, uint32_t size);
+int midi_time_signature_unmarshal(midi_time_signature_t* ctx, uint8_t* data, uint32_t size);
 
 #ifdef __cplusplus
 }

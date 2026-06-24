@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-void midi_note_reset(midi_note_t *ctx)
+void midi_note_reset(midi_note_t* ctx)
 {
     ctx->on = false;
     ctx->channel = 0;
@@ -11,7 +11,7 @@ void midi_note_reset(midi_note_t *ctx)
     ctx->velocity = 0;
 }
 
-int midi_note_unmarshal(midi_note_t *ctx, midi_cmd_t cmd, uint8_t *data, uint32_t size)
+int midi_note_unmarshal(midi_note_t* ctx, midi_cmd_t cmd, uint8_t* data, uint32_t size)
 {
     if (cmd.status != MIDI_STATUS_NOTE_ON & cmd.status != MIDI_STATUS_NOTE_OFF)
     {
@@ -28,18 +28,26 @@ int midi_note_unmarshal(midi_note_t *ctx, midi_cmd_t cmd, uint8_t *data, uint32_
     return iterator;
 }
 
-void midi_note_to_str(midi_note_t *ctx, char *data, uint32_t size)
+void midi_note_to_str(midi_note_t* ctx, char* data, uint32_t size)
 {
-    snprintf(data, size, "note %s ch: %02d pitch: %03d (%s %.2f) velocity: %03d", ctx->on ? "On " : "Off", ctx->channel, ctx->pitch, kNotesStr[ctx->pitch],
-             kNotesFreq[ctx->pitch], ctx->channel);
+    snprintf(
+        data,
+        size,
+        "note %s ch: %02d pitch: %03d (%s %.2f) velocity: %03d",
+        ctx->on ? "On " : "Off",
+        ctx->channel,
+        ctx->pitch,
+        kNotesStr[ctx->pitch],
+        kNotesFreq[ctx->pitch],
+        ctx->channel);
 }
 
-float midi_note_freq(midi_note_t *ctx)
+float midi_note_freq(midi_note_t* ctx)
 {
     return pitch_to_freq(ctx->pitch);
 }
 
-const char *midi_note_name(midi_note_t *ctx)
+const char* midi_note_name(midi_note_t* ctx)
 {
     return pitch_to_name(ctx->pitch);
 }

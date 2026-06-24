@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "events/meta/tempo.h"
+#include "libmidi/events/meta/tempo.h"
 
 #include <array>
 

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "midi_input_device.h"
+#include "libmidi/midi_input_device.h"
 
 #include <array>
 #include <iomanip>
@@ -12,12 +12,13 @@ static midi_cmd_t s_msg = {.raw = 0x00};
 static uint8_t s_message_meta = 0;
 static midi_event_t s_event = {0};
 
-void my_error_handler(void *null_ctx, midi_error_e err)
+void my_error_handler(void* null_ctx, midi_error_e err)
 {
-    std::cerr << " --- midi_error: " << std::hex << std::uppercase << std::setfill('0') << std::setw(2) << ((int64_t)err) << std::dec;
+    std::cerr << " --- midi_error: " << std::hex << std::uppercase << std::setfill('0') << std::setw(2)
+              << ((int64_t)err) << std::dec;
 }
 
-void my_handle_event(void *null_ctx, midi_cmd_t msg, uint8_t message_meta, midi_event_t *event)
+void my_handle_event(void* null_ctx, midi_cmd_t msg, uint8_t message_meta, midi_event_t* event)
 {
     s_should_check = true;
     s_msg = msg;
@@ -32,8 +33,8 @@ TEST(midi_input_device, midi_input_device_full_check)
 
     midi_device_callback_data_t cb = {0};
     cb.handle = 0;
-    cb.event = (midi_cb_event_f *)&my_handle_event;
-    cb.error = (midi_cb_error_f *)&my_error_handler;
+    cb.event = (midi_cb_event_f*)&my_handle_event;
+    cb.error = (midi_cb_error_f*)&my_error_handler;
     midi_input_device_set_listener(input_device_ctx.get(), &cb);
 
     EXPECT_EQ(&my_handle_event, input_device_ctx->listener->event);
@@ -92,8 +93,8 @@ TEST(midi_input_device, midi_input_device_full_check)
     tempEventFiller.note.velocity = 100;
     expectedEvents.push(tempEventFiller);
 
-    const char *trackName = "3xOsc 1";
-    tempEventFiller.meta.text.data = (char *)trackName;
+    const char* trackName = "3xOsc 1";
+    tempEventFiller.meta.text.data = (char*)trackName;
     expectedEvents.push(tempEventFiller);
 
     tempEventFiller.meta.time_signature.numerator = 4;
@@ -105,59 +106,64 @@ TEST(midi_input_device, midi_input_device_full_check)
     tempEventFiller.meta.tempo.val = 120;
     expectedEvents.push(tempEventFiller);
 
-    constexpr std::array<uint8_t, 42> data = {0x00, 0xFF, 0x51, 0x03, 0x07, 0x90, 0xFC, 0x00, 0xFF, 0x58, 0x04, 0x04, 0x02, 0x18,
-                                              0x08, 0x00, 0xFF, 0x03, 0x07, 0x33, 0x78, 0x4F, 0x73, 0x63, 0x20, 0x31, 0x00, 0x90,
-                                              0x3C, 0x64, 0x60, 0x80, 0x3C, 0x40, 0x00, 0x90, 0x38, 0x64, 0x30, 0x80, 0x38, 0x40};
+    constexpr std::array<uint8_t, 42> data = {0x00, 0xFF, 0x51, 0x03, 0x07, 0x90, 0xFC, 0x00, 0xFF, 0x58, 0x04,
+                                              0x04, 0x02, 0x18, 0x08, 0x00, 0xFF, 0x03, 0x07, 0x33, 0x78, 0x4F,
+                                              0x73, 0x63, 0x20, 0x31, 0x00, 0x90, 0x3C, 0x64, 0x60, 0x80, 0x3C,
+                                              0x40, 0x00, 0x90, 0x38, 0x64, 0x30, 0x80, 0x38, 0x40};
 
-    std::for_each(data.begin(), data.end(), [&](const uint8_t &b) {
-        midi_input_device_feed(input_device_ctx.get(), b);
-        if (s_should_check)
+    std::for_each(
+        data.begin(),
+        data.end(),
+        [&](const uint8_t& b)
         {
-            s_should_check = false;
-            EXPECT_FALSE(expectedStatuses.empty());
-            EXPECT_EQ(s_msg.status, expectedStatuses.top());
-            expectedStatuses.pop();
-
-            EXPECT_FALSE(expectedSubCmd.empty());
-            EXPECT_EQ(s_msg.system, expectedSubCmd.top());
-            expectedSubCmd.pop();
-
-            EXPECT_FALSE(expectedMessagesMeta.empty());
-            uint8_t meta_msg = expectedMessagesMeta.top();
-            EXPECT_EQ(s_message_meta, meta_msg);
-            expectedMessagesMeta.pop();
-
-            EXPECT_FALSE(expectedEvents.empty());
-            midi_event_t outEvent = {0};
-            outEvent = expectedEvents.top();
-            expectedEvents.pop();
-            switch (meta_msg)
+            midi_input_device_feed(input_device_ctx.get(), b);
+            if (s_should_check)
             {
-            case MIDI_META_EVENT_TEMPO:
-                EXPECT_EQ(s_event.meta.tempo.val, outEvent.meta.tempo.val);
-                break;
+                s_should_check = false;
+                EXPECT_FALSE(expectedStatuses.empty());
+                EXPECT_EQ(s_msg.status, expectedStatuses.top());
+                expectedStatuses.pop();
 
-            case MIDI_META_EVENT_TIME_SIGNATURE:
-                EXPECT_EQ(s_event.meta.time_signature.numerator, outEvent.meta.time_signature.numerator);
-                EXPECT_EQ(s_event.meta.time_signature.denominator, outEvent.meta.time_signature.denominator);
-                EXPECT_EQ(s_event.meta.time_signature.ticks_per_click, outEvent.meta.time_signature.ticks_per_click);
-                EXPECT_EQ(s_event.meta.time_signature.thirty_second_notes_per_crotchet, outEvent.meta.time_signature.thirty_second_notes_per_crotchet);
-                break;
+                EXPECT_FALSE(expectedSubCmd.empty());
+                EXPECT_EQ(s_msg.system, expectedSubCmd.top());
+                expectedSubCmd.pop();
 
-            case MIDI_META_EVENT_TRACK_NAME:
-                EXPECT_STREQ(s_event.meta.text.data, outEvent.meta.text.data);
-                break;
+                EXPECT_FALSE(expectedMessagesMeta.empty());
+                uint8_t meta_msg = expectedMessagesMeta.top();
+                EXPECT_EQ(s_message_meta, meta_msg);
+                expectedMessagesMeta.pop();
 
-            case MIDI_META_EVENT_SEQUENCE_NUMBER:
-                EXPECT_EQ(s_event.note.on, outEvent.note.on);
-                EXPECT_EQ(s_event.note.channel, outEvent.note.channel);
-                EXPECT_EQ(s_event.note.pitch, outEvent.note.pitch);
-                EXPECT_EQ(s_event.note.velocity, outEvent.note.velocity);
-                break;
+                EXPECT_FALSE(expectedEvents.empty());
+                midi_event_t outEvent = {0};
+                outEvent = expectedEvents.top();
+                expectedEvents.pop();
+                switch (meta_msg)
+                {
+                    case MIDI_META_EVENT_TEMPO: EXPECT_EQ(s_event.meta.tempo.val, outEvent.meta.tempo.val); break;
 
-            default:
-                break;
+                    case MIDI_META_EVENT_TIME_SIGNATURE:
+                        EXPECT_EQ(s_event.meta.time_signature.numerator, outEvent.meta.time_signature.numerator);
+                        EXPECT_EQ(s_event.meta.time_signature.denominator, outEvent.meta.time_signature.denominator);
+                        EXPECT_EQ(
+                            s_event.meta.time_signature.ticks_per_click, outEvent.meta.time_signature.ticks_per_click);
+                        EXPECT_EQ(
+                            s_event.meta.time_signature.thirty_second_notes_per_crotchet,
+                            outEvent.meta.time_signature.thirty_second_notes_per_crotchet);
+                        break;
+
+                    case MIDI_META_EVENT_TRACK_NAME:
+                        EXPECT_STREQ(s_event.meta.text.data, outEvent.meta.text.data);
+                        break;
+
+                    case MIDI_META_EVENT_SEQUENCE_NUMBER:
+                        EXPECT_EQ(s_event.note.on, outEvent.note.on);
+                        EXPECT_EQ(s_event.note.channel, outEvent.note.channel);
+                        EXPECT_EQ(s_event.note.pitch, outEvent.note.pitch);
+                        EXPECT_EQ(s_event.note.velocity, outEvent.note.velocity);
+                        break;
+
+                    default: break;
+                }
             }
-        }
-    });
+        });
 }

@@ -1,6 +1,6 @@
 #include "libmidi/events/meta/time_signature.h"
 
-int midi_time_signature_unmarshal(midi_time_signature_t *ctx, uint8_t *data, uint32_t size)
+int midi_time_signature_unmarshal(midi_time_signature_t* ctx, uint8_t* data, uint32_t size)
 {
     // FF 58 04 nn dd cc bb
     uint32_t iterator = 0;

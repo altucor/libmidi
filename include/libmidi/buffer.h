@@ -13,13 +13,14 @@ typedef struct buffer
 } buffer_t;
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-void buffer_reset(buffer_t *ctx);
-void buffer_set_expected_size(buffer_t *ctx, const uint32_t size);
-uint32_t buffer_space_left(buffer_t *ctx);
-void buffer_append_u8(buffer_t *ctx, const uint8_t b);
+void buffer_reset(buffer_t* ctx);
+void buffer_set_expected_size(buffer_t* ctx, const uint32_t size);
+uint32_t buffer_space_left(buffer_t* ctx);
+void buffer_append_u8(buffer_t* ctx, const uint8_t b);
 
 #ifdef __cplusplus
 }

@@ -2,13 +2,13 @@
 
 #include <stdio.h>
 
-void vlv_reset(vlv_t *ctx)
+void vlv_reset(vlv_t* ctx)
 {
     ctx->counter = 0;
     ctx->val = 0;
 }
 
-bool vlv_feed(vlv_t *ctx, uint8_t b)
+bool vlv_feed(vlv_t* ctx, uint8_t b)
 {
     if (ctx->counter >= 4)
     {
@@ -25,12 +25,12 @@ bool vlv_feed(vlv_t *ctx, uint8_t b)
     return true; // means full
 }
 
-uint32_t vlv_get_value(vlv_t *ctx)
+uint32_t vlv_get_value(vlv_t* ctx)
 {
     return ctx->val;
 }
 
-void vlv_set_value(vlv_t *ctx, const uint32_t val)
+void vlv_set_value(vlv_t* ctx, const uint32_t val)
 {
     ctx->val = val;
     if ((ctx->val & 0xFE00000) != 0)
@@ -52,12 +52,12 @@ void vlv_set_value(vlv_t *ctx, const uint32_t val)
     ctx->counter = (MIDI_VLV_MAX_SIZE - 1);
 }
 
-bool vlv_can_fetch(vlv_t *ctx)
+bool vlv_can_fetch(vlv_t* ctx)
 {
     return ctx->counter <= (MIDI_VLV_MAX_SIZE - 1) && ctx->val != 0;
 }
 
-uint8_t vlv_fetch(vlv_t *ctx)
+uint8_t vlv_fetch(vlv_t* ctx)
 {
     if (!vlv_can_fetch(ctx))
     {

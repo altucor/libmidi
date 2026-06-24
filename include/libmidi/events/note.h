@@ -15,14 +15,15 @@ typedef struct _midi_note
 } midi_note_t;
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-void midi_note_reset(midi_note_t *ctx);
-int midi_note_unmarshal(midi_note_t *ctx, midi_cmd_t cmd, uint8_t *data, uint32_t size);
-void midi_note_to_str(midi_note_t *ctx, char *data, uint32_t size);
-float midi_note_freq(midi_note_t *ctx);
-const char *midi_note_name(midi_note_t *ctx);
+void midi_note_reset(midi_note_t* ctx);
+int midi_note_unmarshal(midi_note_t* ctx, midi_cmd_t cmd, uint8_t* data, uint32_t size);
+void midi_note_to_str(midi_note_t* ctx, char* data, uint32_t size);
+float midi_note_freq(midi_note_t* ctx);
+const char* midi_note_name(midi_note_t* ctx);
 
 #ifdef __cplusplus
 }

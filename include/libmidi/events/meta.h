@@ -5,7 +5,8 @@
 #include "libmidi/events/meta/text.h"
 #include "libmidi/events/meta/time_signature.h"
 
-typedef union _midi_event_meta {
+typedef union _midi_event_meta
+{
     midi_tempo_t tempo;
     midi_time_signature_t time_signature;
     midi_text_event_t text;

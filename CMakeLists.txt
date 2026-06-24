@@ -2,10 +2,6 @@ cmake_minimum_required(VERSION 3.15.2)
 
 project(midi C)
 
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
-
 IF(MSVC)
     add_definitions(-DOS_WINDOWS)
     add_definitions(-DPLATFORM_X86_64)
@@ -34,6 +30,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 23
     CXX_STANDARD_REQUIRED ON
     LINKER_LANGUAGE C
+    CMAKE_COMPILE_WARNING_AS_ERROR ON
 )
 
 target_sources(${PROJECT_NAME}
@@ -95,14 +92,33 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 option(ENABLE_TESTING "Enable unit testing" OFF)
 
 if(ENABLE_TESTING)
+    message(STATUS "[libmidi] Building with unit-tests")
     enable_testing()
+    include(FetchContent)
+
+    # Declare the content to fetch (Google Test)
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG v1.17.x
+    )
+
+    FetchContent_MakeAvailable(googletest)
     add_subdirectory(tests)
 endif()
 
-if(CODE_COVERAGE)
+option(ENABLE_CODE_COVERAGE "Enable code coverage" OFF)
+
+if(ENABLE_CODE_COVERAGE)
     add_custom_target(coverage
         COMMAND ./my_tests
         COMMAND lcov --capture --directory . --output-file coverage.info
         COMMAND genhtml coverage.info --output-directory out
     )
+endif()
+
+option(ENABLE_TOOLS_BUILD "Enable tools build" OFF)
+
+if(ENABLE_TOOLS_BUILD)
+    add_subdirectory(tools)
 endif()

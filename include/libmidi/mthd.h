@@ -1,7 +1,7 @@
 #ifndef MIDI_MTHD_H
 #define MIDI_MTHD_H
 
-#include "protocol.h"
+#include "libmidi/protocol.h"
 
 #include <stdint.h>
 
@@ -10,6 +10,7 @@ typedef enum mthd_format
     MTHD_FORMAT_SINGLE_TRACK = 0x00,
     MTHD_FORMAT_MULTI_TRACK,
     MTHD_FORMAT_MULTI_SONG,
+    MTHD_FORMAT_COUNT
 } mthd_format_e;
 
 #ifdef _MSC_VER
@@ -30,13 +31,13 @@ typedef struct __attribute__((packed)) _mthd
 #endif
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-mthd_t *mthd_new();
-void mthd_free(mthd_t *ctx);
-int mthd_debug(mthd_t *ctx, char *data, uint32_t size);
-int mthd_unmarshal(mthd_t *ctx, const uint8_t *data, const uint32_t size);
+mthd_t* mthd_new();
+void mthd_free(mthd_t* ctx);
+int mthd_unmarshal(mthd_t* ctx, const uint8_t* data, const uint32_t size);
 
 #ifdef __cplusplus
 }

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "events/control.h"
+#include "libmidi/events/control.h"
 
 #include <array>
 
