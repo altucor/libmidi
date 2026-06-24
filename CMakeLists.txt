@@ -15,9 +15,9 @@ ELSEIF(UNIX)
 ENDIF()
 
 IF(CMAKE_BUILD_TYPE MATCHES Debug)
-    message("Debug build.")
+    message("[libmidi] Debug build.")
 ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
-    message("Release build.")
+    message("[libmidi] Release build.")
 ELSE()
     message(" ! ! ! Unknown build type.")
 ENDIF()
@@ -110,6 +110,7 @@ endif()
 option(ENABLE_CODE_COVERAGE "Enable code coverage" OFF)
 
 if(ENABLE_CODE_COVERAGE)
+    message(STATUS "[libmidi] Building with code coverage")
     add_custom_target(coverage
         COMMAND ./my_tests
         COMMAND lcov --capture --directory . --output-file coverage.info
@@ -120,5 +121,6 @@ endif()
 option(ENABLE_TOOLS_BUILD "Enable tools build" OFF)
 
 if(ENABLE_TOOLS_BUILD)
+    message(STATUS "[libmidi] Building with tools")
     add_subdirectory(tools)
 endif()
