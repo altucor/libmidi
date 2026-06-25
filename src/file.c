@@ -50,7 +50,7 @@ void midi_file_free(midi_file_t* ctx)
     free(ctx);
 }
 
-int midi_file_unmarshal(midi_file_t* ctx, uint8_t* data, const uint32_t size)
+int midi_file_unmarshal(midi_file_t* ctx, const uint8_t* data, const uint32_t size)
 {
     if (!ctx || !data || !size)
     {
@@ -82,13 +82,20 @@ int midi_file_unmarshal(midi_file_t* ctx, uint8_t* data, const uint32_t size)
 
         if (res = mtrk_unmarshal(ctx->mtrk[i], data + iterator, size), res < 0)
         {
-            return -1;
+            return res;
         }
 
         iterator += res;
     }
 
     return iterator;
+}
+
+int midi_file_unmarshal_feed(midi_file_t* ctx, const uint8_t* data, const uint32_t size)
+{
+    // collect remainder buffer here
+    // feed this with random size chunks or even signle byte
+    return -1;
 }
 
 mthd_t midi_file_get_mthd(midi_file_t* ctx)

@@ -19,7 +19,8 @@ extern "C"
 
 midi_file_t* midi_file_new();
 void midi_file_free(midi_file_t* ctx);
-int midi_file_unmarshal(midi_file_t* ctx, uint8_t* data, const uint32_t size);
+int midi_file_unmarshal(midi_file_t* ctx, const uint8_t* data, const uint32_t size);
+int midi_file_unmarshal_feed(midi_file_t* ctx, const uint8_t* data, const uint32_t size);
 mthd_t midi_file_get_mthd(midi_file_t* ctx);
 uint16_t midi_file_get_tracks_count(midi_file_t* ctx);
 mtrk_t* midi_file_get_track(midi_file_t* ctx, const uint16_t index);

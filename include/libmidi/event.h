@@ -15,7 +15,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef union midi_event
+typedef union _midi_event_standard
 {
     midi_note_t note;
     midi_key_pressure_t key_pressure;
@@ -23,31 +23,30 @@ typedef union midi_event
     midi_program_change_t program_change;
     midi_channel_pressure_t channel_pressure;
     midi_pitch_t pitch;
-    midi_event_meta_t meta;
-} midi_event_t;
+} midi_event_standard_t;
 
-typedef struct midi_event_smf
+typedef struct _midi_event
 {
     uint32_t predelay;
     midi_cmd_t message;
-    uint8_t message_meta;
-    uint32_t meta_length;
-    midi_event_t event;
-} midi_event_smf_t;
+    midi_meta_event_e message_meta;
+    union
+    {
+        midi_event_standard_t standard;
+        midi_event_meta_t meta;
+    };
+} midi_event_t;
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-void midi_event_smf_reset(midi_event_smf_t* ctx);
-midi_event_smf_t* midi_event_smf_new();
-midi_event_smf_t* midi_event_smf_new_from(
-    const uint32_t predelay,
-    midi_cmd_t msg,
-    uint8_t message_meta,
-    midi_event_t* event);
-void midi_event_smf_free(midi_event_smf_t* ctx);
+void midi_event_reset(midi_event_t* ctx);
+midi_event_t* midi_event_new();
+void midi_event_copy(midi_event_t* dst, const midi_event_t* src);
+void midi_event_cleanup(midi_event_t* ctx);
+void midi_event_free(midi_event_t* ctx);
 
 #ifdef __cplusplus
 }

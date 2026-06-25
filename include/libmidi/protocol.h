@@ -99,6 +99,7 @@ typedef enum _midi_status : uint8_t
     MIDI_STATUS_CHANNEL_PRESSURE,
     MIDI_STATUS_PITCH_BEND,
     MIDI_STATUS_SYSTEM,
+    MIDI_STATUS_COUNT
 } midi_status_e;
 
 typedef enum _midi_status_system : uint8_t
@@ -119,6 +120,7 @@ typedef enum _midi_status_system : uint8_t
     MIDI_STATUS_SYSTEM_RESERVED_13,
     MIDI_STATUS_SYSTEM_ACTIVE_SENSING, // Ping every 300ms
     MIDI_STATUS_SYSTEM_RESET_OR_META,
+    MIDI_STATUS_SYSTEM_COUNT
 } midi_status_system_e;
 
 // Meta events: https://www.mixagesoftware.com/en/midikit/help/HTML/meta_events.html

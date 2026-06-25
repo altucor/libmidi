@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15.2)
+cmake_minimum_required(VERSION 4.0.0)
 
 set(TOP_LEVEL_PROJECT ${PROJECT_NAME})
 project(playground C CXX)

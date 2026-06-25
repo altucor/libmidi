@@ -1,8 +1,17 @@
 #include "libmidi/event/meta/time_signature.h"
+#include "libmidi/errors.h"
 
-int midi_time_signature_unmarshal(midi_time_signature_t* ctx, uint8_t* data, uint32_t size)
+int midi_time_signature_unmarshal(midi_time_signature_t* ctx, const uint8_t* data, const uint32_t size)
 {
     // FF 58 04 nn dd cc bb
+
+    static const uint32_t k_expected_size = 4;
+
+    if (!ctx || !data || size < k_expected_size)
+    {
+        return MIDI_ERROR_GENERAL;
+    }
+
     uint32_t iterator = 0;
     ctx->numerator = data[iterator++];
     ctx->denominator = data[iterator++];

@@ -14,6 +14,10 @@ typedef enum _midi_error
     MIDI_ERROR_STATUS_INVALID = -6,
     MIDI_ERROR_INVALID_MTHD_MARKER = -7,
     MIDI_ERROR_INVALID_MTHD_FORMAT = -8,
+    MIDI_ERROR_INVALID_MTRK_MARKER = -9,
 } midi_error_e;
+
+#define MIDI_NOT_SUCCESS(err) (err < MIDI_ERROR_OK)
+#define MIDI_SUCCESS(err) (!MIDI_NOT_SUCCESS(err))
 
 #endif // MIDI_ERRORS_H

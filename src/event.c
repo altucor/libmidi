@@ -6,53 +6,189 @@
 #include <memory.h>
 #include <stdlib.h>
 
-void midi_event_smf_reset(midi_event_smf_t* ctx)
+void midi_event_reset(midi_event_t* ctx)
 {
-    ctx->predelay = 0;
-    ctx->message.raw = 0;
-    ctx->message_meta = 0;
-    ctx->meta_length = 0;
-    memset(&ctx->event, 0x00, sizeof(midi_event_t));
+    memset(ctx, 0x00, sizeof(midi_event_t));
 }
 
-midi_event_smf_t* midi_event_smf_new()
+midi_event_t* midi_event_new()
 {
-    midi_event_smf_t* ctx = calloc(1, sizeof(midi_event_smf_t));
-    ctx->predelay = 0;
-    return ctx;
-}
-
-midi_event_smf_t* midi_event_smf_new_from(
-    const uint32_t predelay,
-    midi_cmd_t msg,
-    uint8_t message_meta,
-    midi_event_t* event)
-{
-    midi_event_smf_t* ctx = midi_event_smf_new();
-    ctx->predelay = predelay;
-    ctx->message = msg;
-    ctx->message_meta = message_meta;
-    ctx->event = *event;
-
-    if (is_meta_text_event(ctx->message_meta))
+    midi_event_t* ctx = calloc(1, sizeof(midi_event_t));
+    if (!ctx)
     {
-        ctx->event.meta.text.data = malloc(event->meta.text.size);
-        midi_text_event_copy(&ctx->event.meta.text, &event->meta.text);
+        return NULL;
     }
+
+    ctx->predelay = 0;
     return ctx;
 }
 
-void midi_event_smf_free(midi_event_smf_t* ctx)
+void midi_event_copy(midi_event_t* dst, const midi_event_t* src)
 {
-    if (ctx == NULL)
+    if (!dst || !src)
     {
         return;
     }
 
-    if (is_meta_text_event(ctx->message_meta))
+    memcpy(dst, src, sizeof(midi_event_t));
+
+    if (src->message.status != MIDI_STATUS_SYSTEM)
     {
-        midi_text_event_free_data(&ctx->event.meta.text);
+        return;
     }
+
+    switch (src->message_meta)
+    {
+        case MIDI_META_EVENT_SEQUENCE_NUMBER:
+        {
+            break;
+        }
+        case MIDI_META_EVENT_TEXT:
+        case MIDI_META_EVENT_COPYRIGHT:
+        case MIDI_META_EVENT_TRACK_NAME:
+        case MIDI_META_EVENT_INSTRUMENT_NAME:
+        case MIDI_META_EVENT_LYRIC_TEXT:
+        case MIDI_META_EVENT_TEXT_MARKER:
+        case MIDI_META_EVENT_CUE_POINT:
+        case MIDI_META_EVENT_PROGRAM_PATCH_NAME:
+        case MIDI_META_EVENT_DEVICE_PORT_NAME:
+        {
+            dst->meta.text = midi_text_event_new_from(&src->meta.text);
+            break;
+        }
+        case MIDI_META_EVENT_MIDI_CHANNEL:
+        {
+            break;
+        }
+        case MIDI_META_EVENT_MIDI_PORT:
+        {
+            break;
+        }
+        case MIDI_META_EVENT_TRACK_END:
+        {
+            break;
+        }
+        case MIDI_META_EVENT_M_LIVE_TAG:
+        {
+            break;
+        }
+        case MIDI_META_EVENT_TEMPO:
+        {
+            // no need - no dynamic data
+            break;
+        }
+        case MIDI_META_EVENT_SMPTE_OFFSET:
+        {
+            break;
+        }
+        case MIDI_META_EVENT_TIME_SIGNATURE:
+        {
+            // no need - no dynamic data
+            break;
+        }
+        case MIDI_META_EVENT_KEY_SIGNATURE:
+        {
+            break;
+        }
+        case MIDI_META_EVENT_PROPRIETARY_EVENT:
+        {
+            break;
+        }
+
+        default: break;
+    }
+}
+
+void midi_event_cleanup(midi_event_t* ctx)
+{
+    if (!ctx)
+    {
+        return;
+    }
+
+    if (ctx->message.status != MIDI_STATUS_SYSTEM)
+    {
+        return;
+    }
+
+    switch (ctx->message_meta)
+    {
+        case MIDI_META_EVENT_SEQUENCE_NUMBER:
+        {
+            break;
+        }
+        case MIDI_META_EVENT_TEXT:
+        case MIDI_META_EVENT_COPYRIGHT:
+        case MIDI_META_EVENT_TRACK_NAME:
+        case MIDI_META_EVENT_INSTRUMENT_NAME:
+        case MIDI_META_EVENT_LYRIC_TEXT:
+        case MIDI_META_EVENT_TEXT_MARKER:
+        case MIDI_META_EVENT_CUE_POINT:
+        case MIDI_META_EVENT_PROGRAM_PATCH_NAME:
+        case MIDI_META_EVENT_DEVICE_PORT_NAME:
+        {
+            midi_text_event_cleanup(&ctx->meta.text);
+            break;
+        }
+        case MIDI_META_EVENT_MIDI_CHANNEL:
+        {
+            break;
+        }
+        case MIDI_META_EVENT_MIDI_PORT:
+        {
+            break;
+        }
+        case MIDI_META_EVENT_TRACK_END:
+        {
+            break;
+        }
+        case MIDI_META_EVENT_M_LIVE_TAG:
+        {
+            break;
+        }
+        case MIDI_META_EVENT_TEMPO:
+        {
+            // no need - no dynamic data
+            break;
+        }
+        case MIDI_META_EVENT_SMPTE_OFFSET:
+        {
+            break;
+        }
+        case MIDI_META_EVENT_TIME_SIGNATURE:
+        {
+            // no need - no dynamic data
+            break;
+        }
+        case MIDI_META_EVENT_KEY_SIGNATURE:
+        {
+            break;
+        }
+        case MIDI_META_EVENT_PROPRIETARY_EVENT:
+        {
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+
+    // 1. determine type
+    // 2. cast or access correct field of union
+    // 3. cleanup directly field internals
+
+    // free only internal stuff without "free(ctx);"
+}
+
+void midi_event_free(midi_event_t* ctx)
+{
+    if (!ctx)
+    {
+        return;
+    }
+
+    midi_event_cleanup(ctx);
 
     free(ctx);
 }

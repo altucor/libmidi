@@ -1,3 +1,3 @@
-cmake_minimum_required(VERSION 3.15.2)
+cmake_minimum_required(VERSION 4.0.0)
 
 add_subdirectory(playground)

@@ -12,18 +12,16 @@ static midi_cmd_t s_msg = {.raw = 0x00};
 static uint8_t s_message_meta = 0;
 static midi_event_t s_event = {0};
 
-void my_error_handler(void* null_ctx, midi_error_e err)
+void my_error_handler(void* null_ctx, const midi_error_e err)
 {
     std::cerr << " --- midi_error: " << std::hex << std::uppercase << std::setfill('0') << std::setw(2)
               << ((int64_t)err) << std::dec;
 }
 
-void my_handle_event(void* null_ctx, midi_cmd_t msg, uint8_t message_meta, midi_event_t* event)
+void my_handle_event(void* null_ctx, const midi_event_t* event)
 {
     s_should_check = true;
-    s_msg = msg;
-    s_message_meta = message_meta;
-    s_event = *event;
+    midi_event_copy(&s_event, event);
 }
 
 TEST(midi_input_device, midi_input_device_full_check)
@@ -32,7 +30,7 @@ TEST(midi_input_device, midi_input_device_full_check)
     unique_midi_input_device_t input_device_ctx(midi_input_device_new(true), &midi_input_device_free);
 
     midi_device_callback_data_t cb = {0};
-    cb.handle = 0;
+    cb.handle = NULL;
     cb.event = (midi_cb_event_f*)&my_handle_event;
     cb.error = (midi_cb_error_f*)&my_error_handler;
     midi_input_device_set_listener(input_device_ctx.get(), &cb);
@@ -69,32 +67,31 @@ TEST(midi_input_device, midi_input_device_full_check)
     midi_event_t tempEventFiller = {0};
     std::stack<midi_event_t> expectedEvents;
 
-    tempEventFiller.note.on = false;
-    tempEventFiller.note.channel = 0;
-    tempEventFiller.note.pitch = 56;
-    tempEventFiller.note.velocity = 64;
+    tempEventFiller.standard.note.on = false;
+    tempEventFiller.standard.note.channel = 0;
+    tempEventFiller.standard.note.pitch = 56;
+    tempEventFiller.standard.note.velocity = 64;
     expectedEvents.push(tempEventFiller);
 
-    tempEventFiller.note.on = true;
-    tempEventFiller.note.channel = 0;
-    tempEventFiller.note.pitch = 56;
-    tempEventFiller.note.velocity = 100;
+    tempEventFiller.standard.note.on = true;
+    tempEventFiller.standard.note.channel = 0;
+    tempEventFiller.standard.note.pitch = 56;
+    tempEventFiller.standard.note.velocity = 100;
     expectedEvents.push(tempEventFiller);
 
-    tempEventFiller.note.on = false;
-    tempEventFiller.note.channel = 0;
-    tempEventFiller.note.pitch = 60;
-    tempEventFiller.note.velocity = 64;
+    tempEventFiller.standard.note.on = false;
+    tempEventFiller.standard.note.channel = 0;
+    tempEventFiller.standard.note.pitch = 60;
+    tempEventFiller.standard.note.velocity = 64;
     expectedEvents.push(tempEventFiller);
 
-    tempEventFiller.note.on = true;
-    tempEventFiller.note.channel = 0;
-    tempEventFiller.note.pitch = 60;
-    tempEventFiller.note.velocity = 100;
+    tempEventFiller.standard.note.on = true;
+    tempEventFiller.standard.note.channel = 0;
+    tempEventFiller.standard.note.pitch = 60;
+    tempEventFiller.standard.note.velocity = 100;
     expectedEvents.push(tempEventFiller);
 
-    const char* trackName = "3xOsc 1";
-    tempEventFiller.meta.text.data = (char*)trackName;
+    tempEventFiller.meta.text = midi_text_event_new_from_string("3xOsc 1");
     expectedEvents.push(tempEventFiller);
 
     tempEventFiller.meta.time_signature.numerator = 4;
@@ -152,18 +149,21 @@ TEST(midi_input_device, midi_input_device_full_check)
                         break;
 
                     case MIDI_META_EVENT_TRACK_NAME:
+                        EXPECT_EQ(s_event.meta.text.size, outEvent.meta.text.size);
                         EXPECT_STREQ(s_event.meta.text.data, outEvent.meta.text.data);
                         break;
 
                     case MIDI_META_EVENT_SEQUENCE_NUMBER:
-                        EXPECT_EQ(s_event.note.on, outEvent.note.on);
-                        EXPECT_EQ(s_event.note.channel, outEvent.note.channel);
-                        EXPECT_EQ(s_event.note.pitch, outEvent.note.pitch);
-                        EXPECT_EQ(s_event.note.velocity, outEvent.note.velocity);
+                        EXPECT_EQ(s_event.standard.note.on, outEvent.standard.note.on);
+                        EXPECT_EQ(s_event.standard.note.channel, outEvent.standard.note.channel);
+                        EXPECT_EQ(s_event.standard.note.pitch, outEvent.standard.note.pitch);
+                        EXPECT_EQ(s_event.standard.note.velocity, outEvent.standard.note.velocity);
                         break;
 
                     default: break;
                 }
+
+                midi_event_cleanup(&s_event);
             }
         });
 }

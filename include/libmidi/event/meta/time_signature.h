@@ -16,7 +16,7 @@ extern "C"
 {
 #endif
 
-int midi_time_signature_unmarshal(midi_time_signature_t* ctx, uint8_t* data, uint32_t size);
+int midi_time_signature_unmarshal(midi_time_signature_t* ctx, const uint8_t* data, const uint32_t size);
 
 #ifdef __cplusplus
 }
