@@ -1,4 +1,4 @@
-#include "libmidi/events/control.h"
+#include "libmidi/event/control.h"
 
 #include "libmidi/protocol.h"
 
@@ -9,7 +9,7 @@ void midi_control_reset(midi_control_t* ctx)
     ctx->value = 0;
 }
 
-int midi_control_unmarshal(midi_control_t* ctx, midi_cmd_t cmd, uint8_t* data, uint32_t size)
+int midi_control_unmarshal(midi_control_t* ctx, const midi_cmd_t cmd, const uint8_t* data, const uint32_t size)
 {
     if (cmd.status != MIDI_STATUS_CONTROLLER_CHANGE)
     {
@@ -18,9 +18,9 @@ int midi_control_unmarshal(midi_control_t* ctx, midi_cmd_t cmd, uint8_t* data, u
 
     uint32_t iterator = 0;
     ctx->channel = cmd.channel;
-    MIDI_CHECK_DATA_OR_FAIL(data[iterator], ctx->control);
-    iterator++;
-    MIDI_CHECK_DATA_OR_FAIL(data[iterator], ctx->value);
-    iterator++;
+
+    MIDI_DECODE_OR_FAIL(ctx->control, data, iterator, size)
+    MIDI_DECODE_OR_FAIL(ctx->value, data, iterator, size)
+
     return iterator;
 }

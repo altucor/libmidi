@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "libmidi/events/meta/time_signature.h"
+#include "libmidi/event/meta/time_signature.h"
 
 #include <array>
 

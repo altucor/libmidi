@@ -20,7 +20,7 @@ extern "C"
 #endif
 
 void midi_note_reset(midi_note_t* ctx);
-int midi_note_unmarshal(midi_note_t* ctx, midi_cmd_t cmd, uint8_t* data, uint32_t size);
+int midi_note_unmarshal(midi_note_t* ctx, const midi_cmd_t cmd, const uint8_t* data, const uint32_t size);
 float midi_note_freq(midi_note_t* ctx);
 const char* midi_note_name(midi_note_t* ctx);
 

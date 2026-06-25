@@ -14,7 +14,11 @@ extern "C"
 {
 #endif
 
-int midi_program_change_unmarshal(midi_program_change_t* ctx, midi_cmd_t cmd, uint8_t* data, uint32_t size);
+int midi_program_change_unmarshal(
+    midi_program_change_t* ctx,
+    const midi_cmd_t cmd,
+    const uint8_t* data,
+    const uint32_t size);
 
 #ifdef __cplusplus
 }

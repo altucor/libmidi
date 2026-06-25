@@ -1,4 +1,4 @@
-#include "libmidi/events/meta/tempo.h"
+#include "libmidi/event/meta/tempo.h"
 
 int midi_tempo_unmarshal(midi_tempo_t* ctx, uint8_t* data, uint32_t size)
 {

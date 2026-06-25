@@ -1,4 +1,4 @@
-#include "libmidi/events/meta/text.h"
+#include "libmidi/event/meta/text.h"
 
 #include <memory.h>
 #include <stdlib.h>

@@ -17,7 +17,7 @@ extern "C"
 #endif
 
 void midi_pitch_reset(midi_pitch_t* ctx);
-int midi_pitch_unmarshal(midi_pitch_t* ctx, midi_cmd_t cmd, uint8_t* data, uint32_t size);
+int midi_pitch_unmarshal(midi_pitch_t* ctx, const midi_cmd_t cmd, const uint8_t* data, const uint32_t size);
 
 #ifdef __cplusplus
 }

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "libmidi/events/pitch.h"
+#include "libmidi/event/pitch.h"
 
 #include <array>
 

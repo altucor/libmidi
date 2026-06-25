@@ -1,6 +1,6 @@
 #include "libmidi/event.h"
 
-#include "libmidi/events/meta.h"
+#include "libmidi/event/meta.h"
 #include "libmidi/util.h"
 
 #include <memory.h>

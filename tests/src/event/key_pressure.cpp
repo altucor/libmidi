@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "libmidi/events/key_pressure.h"
+#include "libmidi/event/key_pressure.h"
 
 #include <array>
 

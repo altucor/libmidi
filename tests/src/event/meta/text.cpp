@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "libmidi/events/meta/text.h"
+#include "libmidi/event/meta/text.h"
 
 TEST(text, midi_text_event_unmarshal)
 {

@@ -45,16 +45,16 @@ target_sources(${PROJECT_NAME}
     src/util.c
     src/vlv.c
 
-    src/events/note.c
-    src/events/pitch.c
-    src/events/program_change.c
-    src/events/control.c
-    src/events/channel_pressure.c
-    src/events/key_pressure.c
+    src/event/note.c
+    src/event/pitch.c
+    src/event/program_change.c
+    src/event/control.c
+    src/event/channel_pressure.c
+    src/event/key_pressure.c
 
-    src/events/meta/tempo.c
-    src/events/meta/text.c
-    src/events/meta/time_signature.c
+    src/event/meta/tempo.c
+    src/event/meta/text.c
+    src/event/meta/time_signature.c
 
     PUBLIC
     FILE_SET HEADERS
@@ -73,17 +73,17 @@ target_sources(${PROJECT_NAME}
     include/libmidi/file.h
     include/libmidi/midi_input_device.h
 
-    include/libmidi/events/note.h
-    include/libmidi/events/pitch.h
-    include/libmidi/events/program_change.h
-    include/libmidi/events/meta.h
-    include/libmidi/events/key_pressure.h
-    include/libmidi/events/control.h
-    include/libmidi/events/channel_pressure.h
+    include/libmidi/event/note.h
+    include/libmidi/event/pitch.h
+    include/libmidi/event/program_change.h
+    include/libmidi/event/meta.h
+    include/libmidi/event/key_pressure.h
+    include/libmidi/event/control.h
+    include/libmidi/event/channel_pressure.h
 
-    include/libmidi/events/meta/tempo.h
-    include/libmidi/events/meta/text.h
-    include/libmidi/events/meta/time_signature.h
+    include/libmidi/event/meta/tempo.h
+    include/libmidi/event/meta/text.h
+    include/libmidi/event/meta/time_signature.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)

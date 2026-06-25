@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "libmidi/events/note.h"
+#include "libmidi/event/note.h"
 
 #include <array>
 

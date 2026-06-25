@@ -1,4 +1,4 @@
-#include "libmidi/events/note.h"
+#include "libmidi/event/note.h"
 #include "libmidi/util.h"
 
 void midi_note_reset(midi_note_t* ctx)
@@ -9,7 +9,7 @@ void midi_note_reset(midi_note_t* ctx)
     ctx->velocity = 0;
 }
 
-int midi_note_unmarshal(midi_note_t* ctx, midi_cmd_t cmd, uint8_t* data, uint32_t size)
+int midi_note_unmarshal(midi_note_t* ctx, const midi_cmd_t cmd, const uint8_t* data, const uint32_t size)
 {
     if (cmd.status != MIDI_STATUS_NOTE_ON & cmd.status != MIDI_STATUS_NOTE_OFF)
     {
@@ -19,10 +19,10 @@ int midi_note_unmarshal(midi_note_t* ctx, midi_cmd_t cmd, uint8_t* data, uint32_
     uint32_t iterator = 0;
     ctx->on = cmd.status;
     ctx->channel = cmd.channel;
-    MIDI_CHECK_DATA_OR_FAIL(data[iterator], ctx->pitch);
-    iterator++;
-    MIDI_CHECK_DATA_OR_FAIL(data[iterator], ctx->velocity);
-    iterator++;
+
+    MIDI_DECODE_OR_FAIL(ctx->pitch, data, iterator, size)
+    MIDI_DECODE_OR_FAIL(ctx->velocity, data, iterator, size)
+
     return iterator;
 }
 

@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <stdio.h>
+
 #define MIDI_NOTES_IN_OCTAVE (12)
 #define MIDI_CHANNELS_MAX_COUNT (16)
 #define MIDI_CONTROLLERS_MAX_COUNT (128)
@@ -16,10 +18,20 @@
 #define MIDI_CHECK_NEW_MESSAGE(in) (((in) & MIDI_MASK_NEW_MESSAGE_BYTE) == MIDI_MASK_NEW_MESSAGE_BYTE)
 #define MIDI_CHECK_DATA(in) (!MIDI_CHECK_NEW_MESSAGE((in)))
 
-#define MIDI_CHECK_DATA_OR_FAIL(in, out)                                                                               \
-    if (!MIDI_CHECK_DATA((in)))                                                                                        \
-        return MIDI_ERROR_NOT_DATA;                                                                                    \
-    (out) = (in);
+#define MIDI_DECODE_OR_FAIL(out, arr, index, size)                                                                     \
+    if (index + sizeof(out) > size)                                                                                    \
+    {                                                                                                                  \
+        return MIDI_ERROR_GENERAL;                                                                                     \
+    }                                                                                                                  \
+    for (uint32_t __i = 0; __i < sizeof(out); __i++)                                                                   \
+    {                                                                                                                  \
+        if (MIDI_CHECK_NEW_MESSAGE((arr[index + __i])))                                                                \
+        {                                                                                                              \
+            return MIDI_ERROR_NOT_DATA;                                                                                \
+        }                                                                                                              \
+    }                                                                                                                  \
+    (out) = *((__typeof__(out)*)&arr[index]);                                                                          \
+    index += sizeof(out);
 
 #define MIDI_VLV_MAX_SIZE (sizeof(uint32_t))
 // 0b 01111111 - MIDI_VLV_BYTE_SIZE_IN_BITS

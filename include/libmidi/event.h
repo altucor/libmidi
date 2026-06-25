@@ -3,13 +3,13 @@
 
 #include "libmidi/protocol.h"
 
-#include "libmidi/events/channel_pressure.h"
-#include "libmidi/events/control.h"
-#include "libmidi/events/key_pressure.h"
-#include "libmidi/events/meta.h"
-#include "libmidi/events/note.h"
-#include "libmidi/events/pitch.h"
-#include "libmidi/events/program_change.h"
+#include "libmidi/event/channel_pressure.h"
+#include "libmidi/event/control.h"
+#include "libmidi/event/key_pressure.h"
+#include "libmidi/event/meta.h"
+#include "libmidi/event/note.h"
+#include "libmidi/event/pitch.h"
+#include "libmidi/event/program_change.h"
 #include "libmidi/vlv.h"
 
 #include <stdbool.h>
