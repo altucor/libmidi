@@ -45,13 +45,17 @@ target_sources(${PROJECT_NAME}
     src/util.c
     src/vlv.c
 
-    src/event/note.c
-    src/event/pitch.c
-    src/event/program_change.c
-    src/event/control.c
-    src/event/channel_pressure.c
-    src/event/key_pressure.c
+    src/event/standard/channel_pressure.c
+    src/event/standard/control.c
+    src/event/standard/key_pressure.c
+    src/event/standard/note.c
+    src/event/standard/pitch.c
+    src/event/standard/program_change.c
 
+    src/event/system/sysex.c
+
+    src/event/meta/channel.c
+    src/event/meta/sequence_number.c
     src/event/meta/tempo.c
     src/event/meta/text.c
     src/event/meta/time_signature.c
@@ -73,17 +77,23 @@ target_sources(${PROJECT_NAME}
     include/libmidi/file.h
     include/libmidi/midi_input_device.h
 
-    include/libmidi/event/note.h
-    include/libmidi/event/pitch.h
-    include/libmidi/event/program_change.h
-    include/libmidi/event/meta.h
-    include/libmidi/event/key_pressure.h
-    include/libmidi/event/control.h
-    include/libmidi/event/channel_pressure.h
+    include/libmidi/event/standard/note.h
+    include/libmidi/event/standard/pitch.h
+    include/libmidi/event/standard/program_change.h
+    include/libmidi/event/standard/key_pressure.h
+    include/libmidi/event/standard/control.h
+    include/libmidi/event/standard/channel_pressure.h
+    include/libmidi/event/standard/united.h
 
+    include/libmidi/event/system/sysex.h
+    include/libmidi/event/system/united.h
+
+    include/libmidi/event/meta/channel.h
+    include/libmidi/event/meta/sequence_number.h
     include/libmidi/event/meta/tempo.h
     include/libmidi/event/meta/text.h
     include/libmidi/event/meta/time_signature.h
+    include/libmidi/event/meta/united.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)

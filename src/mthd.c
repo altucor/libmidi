@@ -51,7 +51,7 @@ int mthd_unmarshal(mthd_t* ctx, const uint8_t* data, const uint32_t size)
     (*(uint32_t*)&ctx->mthd) = readu32(data, &iterator);
     if (memcmp(ctx->mthd, k_mthd_header_reference, MTHD_MARKER_SIZE))
     {
-        return MIDI_ERROR_INVALID_MTHD_MARKER;
+        return MIDI_ERROR_MTHD_INVALID_MARKER;
     }
 
     ctx->length = readu32bswap(data, &iterator);
@@ -59,7 +59,7 @@ int mthd_unmarshal(mthd_t* ctx, const uint8_t* data, const uint32_t size)
 
     if (ctx->format >= MTHD_FORMAT_COUNT)
     {
-        return MIDI_ERROR_INVALID_MTHD_FORMAT;
+        return MIDI_ERROR_MTHD_INVALID_FORMAT;
     }
 
     ctx->track_count = readu16bswap(data, &iterator);

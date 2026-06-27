@@ -1,5 +1,5 @@
-#ifndef MIDI_CHANNEL_PRESSURE_H
-#define MIDI_CHANNEL_PRESSURE_H
+#ifndef MIDI_EVENT_STANDARD_CHANNEL_PRESSURE_H
+#define MIDI_EVENT_STANDARD_CHANNEL_PRESSURE_H
 
 #include "libmidi/protocol.h"
 
@@ -24,4 +24,4 @@ int midi_channel_pressure_unmarshal(
 }
 #endif
 
-#endif // MIDI_CHANNEL_PRESSURE_H
+#endif // MIDI_EVENT_STANDARD_CHANNEL_PRESSURE_H

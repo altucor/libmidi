@@ -1,4 +1,4 @@
-#include "libmidi/event/note.h"
+#include "libmidi/event/standard/note.h"
 #include "libmidi/util.h"
 
 void midi_note_reset(midi_note_t* ctx)

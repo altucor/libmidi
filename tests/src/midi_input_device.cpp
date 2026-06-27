@@ -51,9 +51,9 @@ TEST(midi_input_device, midi_input_device_full_check)
     expectedSubCmd.push(0);
     expectedSubCmd.push(0);
     expectedSubCmd.push(0);
-    expectedSubCmd.push(MIDI_STATUS_SYSTEM_RESET_OR_META);
-    expectedSubCmd.push(MIDI_STATUS_SYSTEM_RESET_OR_META);
-    expectedSubCmd.push(MIDI_STATUS_SYSTEM_RESET_OR_META);
+    expectedSubCmd.push(MIDI_STATUS_SYSTEM_COMMON_META);
+    expectedSubCmd.push(MIDI_STATUS_SYSTEM_COMMON_META);
+    expectedSubCmd.push(MIDI_STATUS_SYSTEM_COMMON_META);
 
     std::stack<uint8_t> expectedMessagesMeta;
     expectedMessagesMeta.push(MIDI_META_EVENT_SEQUENCE_NUMBER);

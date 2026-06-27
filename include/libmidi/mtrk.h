@@ -10,6 +10,7 @@
 
 typedef struct _mtrk
 {
+    midi_error_e error;
     midi_input_device_t* device;
     midi_device_callback_data_t cb;
     char mtrk[MTRK_MARKER_SIZE];

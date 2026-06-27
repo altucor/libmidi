@@ -1,5 +1,5 @@
-#ifndef MIDI_KEY_PRESSURE_H
-#define MIDI_KEY_PRESSURE_H
+#ifndef MIDI_EVENT_STANDARD_KEY_PRESSURE_H
+#define MIDI_EVENT_STANDARD_KEY_PRESSURE_H
 
 #include "libmidi/protocol.h"
 
@@ -25,4 +25,4 @@ int midi_key_pressure_unmarshal(
 }
 #endif
 
-#endif // MIDI_KEY_PRESSURE_H
+#endif // MIDI_EVENT_STANDARD_KEY_PRESSURE_H

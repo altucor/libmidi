@@ -1,5 +1,5 @@
-#ifndef MIDI_PROGRAM_CHANGE_H
-#define MIDI_PROGRAM_CHANGE_H
+#ifndef MIDI_EVENT_STANDARD_PROGRAM_CHANGE_H
+#define MIDI_EVENT_STANDARD_PROGRAM_CHANGE_H
 
 #include "libmidi/protocol.h"
 
@@ -24,4 +24,4 @@ int midi_program_change_unmarshal(
 }
 #endif
 
-#endif // MIDI_PROGRAM_CHANGE_H
+#endif // MIDI_EVENT_STANDARD_PROGRAM_CHANGE_H

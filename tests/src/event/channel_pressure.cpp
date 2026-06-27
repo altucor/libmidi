@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "libmidi/event/channel_pressure.h"
+#include "libmidi/event/standard/channel_pressure.h"
 
 #include <array>
 

@@ -4,8 +4,23 @@
 #include <memory.h>
 #include <stdlib.h>
 
+void mtrk_handle_error(mtrk_t* ctx, const midi_error_e error)
+{
+    if (!ctx)
+    {
+        return;
+    }
+
+    ctx->error = error;
+}
+
 void mtrk_handle_event(mtrk_t* ctx, const midi_event_t* event)
 {
+    if (!ctx)
+    {
+        return;
+    }
+
     if (ctx->events_count == 0)
     {
         ctx->events = calloc(ctx->events_count + 1, sizeof(midi_event_t));
@@ -82,7 +97,7 @@ void mtrk_free(mtrk_t* ctx)
 
 static bool is_track_end_event(const midi_event_t* event)
 {
-    return event->message.status == MIDI_STATUS_SYSTEM && event->message.system == MIDI_STATUS_SYSTEM_RESET_OR_META &&
+    return event->message.status == MIDI_STATUS_SYSTEM && event->message.system == MIDI_STATUS_SYSTEM_COMMON_META &&
            event->message_meta == MIDI_META_EVENT_TRACK_END;
     // return false;
 }
@@ -100,7 +115,7 @@ int mtrk_unmarshal(mtrk_t* ctx, const uint8_t* data, const uint32_t size)
     (*(uint32_t*)&ctx->mtrk) = readu32(data, &iterator);
     if (memcmp(ctx->mtrk, k_mtrk_header_reference, MTRK_MARKER_SIZE))
     {
-        return MIDI_ERROR_INVALID_MTRK_MARKER;
+        return MIDI_ERROR_MTRK_INVALID_MARKER;
     }
 
     ctx->size = readu32bswap(data, &iterator);

@@ -35,7 +35,7 @@ TEST(mtrk, mtrk_full_check)
     event = mtrk_get_event(mtrk_ctx.get(), event_iter++);
     EXPECT_TRUE(event->message.new_msg);
     EXPECT_EQ(event->message.status, MIDI_STATUS_SYSTEM);
-    EXPECT_EQ(event->message.system, MIDI_STATUS_SYSTEM_RESET_OR_META);
+    EXPECT_EQ(event->message.system, MIDI_STATUS_SYSTEM_COMMON_META);
     EXPECT_EQ(event->message_meta, MIDI_META_EVENT_TEMPO);
     EXPECT_EQ(event->predelay, 0);
     EXPECT_EQ(event->meta.tempo.val, 120);
@@ -43,7 +43,7 @@ TEST(mtrk, mtrk_full_check)
     event = mtrk_get_event(mtrk_ctx.get(), event_iter++);
     EXPECT_TRUE(event->message.new_msg);
     EXPECT_EQ(event->message.status, MIDI_STATUS_SYSTEM);
-    EXPECT_EQ(event->message.system, MIDI_STATUS_SYSTEM_RESET_OR_META);
+    EXPECT_EQ(event->message.system, MIDI_STATUS_SYSTEM_COMMON_META);
     EXPECT_EQ(event->message_meta, MIDI_META_EVENT_TIME_SIGNATURE);
     EXPECT_EQ(event->predelay, 0);
     EXPECT_EQ(event->meta.time_signature.numerator, 4);
@@ -54,7 +54,7 @@ TEST(mtrk, mtrk_full_check)
     event = mtrk_get_event(mtrk_ctx.get(), event_iter++);
     EXPECT_TRUE(event->message.new_msg);
     EXPECT_EQ(event->message.status, MIDI_STATUS_SYSTEM);
-    EXPECT_EQ(event->message.system, MIDI_STATUS_SYSTEM_RESET_OR_META);
+    EXPECT_EQ(event->message.system, MIDI_STATUS_SYSTEM_COMMON_META);
     EXPECT_EQ(event->message_meta, MIDI_META_EVENT_TRACK_NAME);
     EXPECT_EQ(event->predelay, 0);
     std::string wrapper(event->meta.text.data, event->meta.text.size);
@@ -173,7 +173,7 @@ TEST(mtrk, mtrk_full_check)
     event = mtrk_get_event(mtrk_ctx.get(), event_iter++);
     EXPECT_TRUE(event->message.new_msg);
     EXPECT_EQ(event->message.status, MIDI_STATUS_SYSTEM);
-    EXPECT_EQ(event->message.system, MIDI_STATUS_SYSTEM_RESET_OR_META);
+    EXPECT_EQ(event->message.system, MIDI_STATUS_SYSTEM_COMMON_META);
     EXPECT_EQ(event->message_meta, MIDI_META_EVENT_TRACK_END);
     EXPECT_EQ(event->predelay, 64);
 }

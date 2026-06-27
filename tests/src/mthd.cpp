@@ -43,7 +43,7 @@ TEST(mthd, mthd_invalid_mthd_marker)
 
     constexpr std::array<uint8_t, 14> data = {
         0x4D, 0x53, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 0x00, 0x01, 0x00, 0x02, 0x00, 0x60};
-    EXPECT_EQ(mthd_unmarshal(mthd_ctx.get(), data.data(), data.size()), MIDI_ERROR_INVALID_MTHD_MARKER);
+    EXPECT_EQ(mthd_unmarshal(mthd_ctx.get(), data.data(), data.size()), MIDI_ERROR_MTHD_INVALID_MARKER);
 
     EXPECT_EQ(std::memcmp(mthd_ctx->mthd, k_mthd_header_reference, MTHD_MARKER_SIZE), -1);
     EXPECT_EQ(mthd_ctx->length, 0);
@@ -59,7 +59,7 @@ TEST(mthd, mthd_invalid_mthd_format)
 
     constexpr std::array<uint8_t, 14> data = {
         0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 0x00, 0x05, 0x00, 0x02, 0x00, 0x60};
-    EXPECT_EQ(mthd_unmarshal(mthd_ctx.get(), data.data(), data.size()), MIDI_ERROR_INVALID_MTHD_FORMAT);
+    EXPECT_EQ(mthd_unmarshal(mthd_ctx.get(), data.data(), data.size()), MIDI_ERROR_MTHD_INVALID_FORMAT);
 
     EXPECT_TRUE(0 == std::memcmp(mthd_ctx->mthd, k_mthd_header_reference, MTHD_MARKER_SIZE));
     EXPECT_EQ(mthd_ctx->length, 6);

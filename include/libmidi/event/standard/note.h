@@ -1,5 +1,5 @@
-#ifndef MIDI_NOTE_H
-#define MIDI_NOTE_H
+#ifndef MIDI_EVENT_STANDARD_NOTE_H
+#define MIDI_EVENT_STANDARD_NOTE_H
 
 #include "libmidi/protocol.h"
 
@@ -28,4 +28,4 @@ const char* midi_note_name(midi_note_t* ctx);
 }
 #endif
 
-#endif // MIDI_NOTE_H
+#endif // MIDI_EVENT_STANDARD_NOTE_H

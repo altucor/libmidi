@@ -80,9 +80,14 @@ int midi_file_unmarshal(midi_file_t* ctx, const uint8_t* data, const uint32_t si
             return -1;
         }
 
-        if (res = mtrk_unmarshal(ctx->mtrk[i], data + iterator, size), res < 0)
+        if (res = mtrk_unmarshal(ctx->mtrk[i], data + iterator, size - iterator), res < 0)
         {
             return res;
+        }
+
+        if (res < ctx->mtrk[i]->size + MTRK_MARKER_SIZE + sizeof(ctx->mtrk[i]->size))
+        {
+            return MIDI_ERROR_MTRK_NOT_FULLY_PROCESSED;
         }
 
         iterator += res;

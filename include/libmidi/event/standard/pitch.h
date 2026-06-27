@@ -1,5 +1,5 @@
-#ifndef MIDI_PITCH_H
-#define MIDI_PITCH_H
+#ifndef MIDI_EVENT_STANDARD_PITCH_H
+#define MIDI_EVENT_STANDARD_PITCH_H
 
 #include "libmidi/protocol.h"
 
@@ -23,4 +23,4 @@ int midi_pitch_unmarshal(midi_pitch_t* ctx, const midi_cmd_t cmd, const uint8_t*
 }
 #endif
 
-#endif // MIDI_PITCH_H
+#endif // MIDI_EVENT_STANDARD_PITCH_H

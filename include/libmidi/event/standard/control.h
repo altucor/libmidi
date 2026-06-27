@@ -1,5 +1,5 @@
-#ifndef MIDI_CONTROL_H
-#define MIDI_CONTROL_H
+#ifndef MIDI_EVENT_STANDARD_CONTROL_H
+#define MIDI_EVENT_STANDARD_CONTROL_H
 
 #include "libmidi/protocol.h"
 
@@ -24,4 +24,4 @@ int midi_control_unmarshal(midi_control_t* ctx, const midi_cmd_t cmd, const uint
 }
 #endif
 
-#endif // MIDI_CONTROL_H
+#endif // MIDI_EVENT_STANDARD_CONTROL_H

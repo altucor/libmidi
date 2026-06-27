@@ -4,6 +4,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef struct _view_buffer
+{
+    uint8_t* data;
+    uint32_t size;
+} view_buffer_t;
+
 #ifdef __cplusplus
 extern "C"
 {
