@@ -1,10 +1,10 @@
-#include "libmidi/event/system/sysex.h"
+#include "libmidi/event/meta/proprietary.h"
 #include "libmidi/errors.h"
 
 #include <memory.h>
 #include <stdlib.h>
 
-void midi_sysex_clean(midi_sysex_t* ctx)
+void midi_proprietary_clean(midi_proprietary_t* ctx)
 {
     if (!ctx)
     {
@@ -20,14 +20,16 @@ void midi_sysex_clean(midi_sysex_t* ctx)
     }
 }
 
-int midi_sysex_unmarshal(midi_sysex_t* ctx, const uint8_t* data, const uint32_t size)
+int midi_proprietary_unmarshal(midi_proprietary_t* ctx, const uint8_t* data, const uint32_t size)
 {
+    // FF 7F sz b1 b2 b3...
+
     if (!ctx || !data || !size)
     {
         return MIDI_ERROR_GENERAL;
     }
 
-    midi_sysex_clean(ctx);
+    midi_proprietary_clean(ctx);
 
     ctx->data = malloc(size);
     if (!ctx->data)
@@ -37,8 +39,6 @@ int midi_sysex_unmarshal(midi_sysex_t* ctx, const uint8_t* data, const uint32_t 
 
     ctx->size = size;
     memcpy(ctx->data, data, ctx->size);
-    // First byte in SysEx event should be manufacturer id
-    ctx->vendor = data[0];
 
     return size;
 }

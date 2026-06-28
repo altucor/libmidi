@@ -52,10 +52,16 @@ target_sources(${PROJECT_NAME}
     src/event/standard/pitch.c
     src/event/standard/program_change.c
 
+    src/event/system/mtc_quarter_frame.c
+    src/event/system/song_position.c
+    src/event/system/song_select.c
     src/event/system/sysex.c
 
     src/event/meta/channel_prefix.c
+    src/event/meta/key_signature.c
+    src/event/meta/m_live_tag.c
     src/event/meta/port.c
+    src/event/meta/proprietary.c
     src/event/meta/sequence_number.c
     src/event/meta/smpte_offset.c
     src/event/meta/tempo.c
@@ -87,11 +93,17 @@ target_sources(${PROJECT_NAME}
     include/libmidi/event/standard/channel_pressure.h
     include/libmidi/event/standard/united.h
 
+    include/libmidi/event/system/mtc_quarter_frame.h
+    include/libmidi/event/system/song_position.h
+    include/libmidi/event/system/song_select.h
     include/libmidi/event/system/sysex.h
     include/libmidi/event/system/united.h
 
     include/libmidi/event/meta/channel_prefix.h
+    include/libmidi/event/meta/key_signature.h
+    include/libmidi/event/meta/m_live_tag.h
     include/libmidi/event/meta/port.h
+    include/libmidi/event/meta/proprietary.h
     include/libmidi/event/meta/sequence_number.h
     include/libmidi/event/meta/smpte_offset.h
     include/libmidi/event/meta/tempo.h
