@@ -7,13 +7,13 @@
 #include <vector>
 #include <string>
 
-void midiHandleSystemEvent(const midi_event_t* event)
+void midiHandleSystemMetaEvent(const midi_event_t* event)
 {
 
     auto textPrint = [](const midi_event_t* event, const std::string name)
     {
         std::print(
-            "Event predelay: {:04d} Meta {:s} text: \"{:s}\"\n",
+            "Event predelay: {:04d} System Meta {:s} text: \"{:s}\"\n",
             event->predelay,
             name,
             std::string(event->meta.text.data, event->meta.text.size));
@@ -24,7 +24,7 @@ void midiHandleSystemEvent(const midi_event_t* event)
         case MIDI_META_EVENT_SEQUENCE_NUMBER:
         {
             std::print(
-                "Event predelay: {:04d} Meta sequence number: {:d}\n",
+                "Event predelay: {:04d} System Meta sequence number: {:d}\n",
                 event->predelay,
                 event->meta.sequence_number.val);
             break;
@@ -74,36 +74,66 @@ void midiHandleSystemEvent(const midi_event_t* event)
             textPrint(event, "Device port name");
             break;
         }
-        case MIDI_META_EVENT_MIDI_CHANNEL:
+        case MIDI_META_EVENT_MIDI_CHANNEL_PREFIX:
         {
+            std::print(
+                "Event predelay: {:04d} System Meta Midi chanel prefix: {:d}\n",
+                event->predelay,
+                event->meta.channel_prefix.val);
             break;
         }
         case MIDI_META_EVENT_MIDI_PORT:
         {
+            std::print("Event predelay: {:04d} System Meta Midi port: {:d}\n", event->predelay, event->meta.port.val);
             break;
         }
         case MIDI_META_EVENT_TRACK_END:
         {
-            std::print("Event predelay: {:04d} Meta TRACK_END\n", event->predelay);
+            std::print("Event predelay: {:04d} System Meta TRACK_END\n", event->predelay);
             break;
         }
         case MIDI_META_EVENT_M_LIVE_TAG:
         {
+            std::print("Event predelay: {:04d} System Meta UNSUPPORTED MIDI_META_EVENT_M_LIVE_TAG\n", event->predelay);
             break;
         }
         case MIDI_META_EVENT_TEMPO:
         {
-            std::print("Event predelay: {:04d} Meta Tempo: {:d}\n", event->predelay, event->meta.tempo.val);
+            std::print("Event predelay: {:04d} System Meta Tempo: {:d}\n", event->predelay, event->meta.tempo.val);
             break;
         }
         case MIDI_META_EVENT_SMPTE_OFFSET:
         {
+            auto fpsToFloat = [](const smpte_fps_t fps)
+            {
+                switch (fps)
+                {
+                    case SMPTE_FPS_24: return 24.0f;
+                    case SMPTE_FPS_25: return 25.0f;
+                    case SMPTE_FPS_29_97: return 29.97f;
+                    case SMPTE_FPS_30: return 30.0f;
+                    default: return 0.0f;
+                }
+            };
+
+            std::print(
+                "Event predelay: {:04d} System Meta SMPTE Offset: fps: {:.02f}, hours: {:d}, minutes: {:d}, seconds: "
+                "{:d}, frames: {:d}, sub-frames: {:d}\n",
+                event->predelay,
+                fpsToFloat(event->meta.smpte_offset.hours.fps),
+                event->meta.smpte_offset.hours.hours,
+                event->meta.smpte_offset.minutes,
+                event->meta.smpte_offset.seconds,
+                event->meta.smpte_offset.frames,
+                event->meta.smpte_offset.subframes);
+
             break;
         }
         case MIDI_META_EVENT_TIME_SIGNATURE:
         {
             std::print(
-                "Event predelay: {:04d} Meta Time signature: numerator: {:d}, denominator: {:d}, ticks_per_click: "
+                "Event predelay: {:04d} System Meta Time signature: numerator: {:d}, denominator: {:d}, "
+                "ticks_per_click: "
                 "{:d}, thirty_second_notes_per_crotchet: {:d}\n",
                 event->predelay,
                 event->meta.time_signature.numerator,
@@ -114,17 +144,148 @@ void midiHandleSystemEvent(const midi_event_t* event)
         }
         case MIDI_META_EVENT_KEY_SIGNATURE:
         {
+            std::print(
+                "Event predelay: {:04d} System Meta UNSUPPORTED MIDI_META_EVENT_KEY_SIGNATURE\n", event->predelay);
             break;
         }
         case MIDI_META_EVENT_PROPRIETARY_EVENT:
         {
+            std::print(
+                "Event predelay: {:04d} System Meta UNSUPPORTED MIDI_META_EVENT_PROPRIETARY_EVENT\n", event->predelay);
             break;
         }
 
         default:
         {
-            std::print("Event Meta: UNKNOWN: 0x{:02X}\n", static_cast<uint8_t>(event->message_meta));
+            std::print("Event System Meta: UNKNOWN: 0x{:02X}\n", static_cast<uint8_t>(event->message_meta));
         }
+    }
+}
+
+void midiHandleSystemEvent(const midi_event_t* event)
+{
+    if (!event)
+    {
+        return;
+    }
+
+    switch (event->message.system)
+    {
+        case MIDI_STATUS_SYSTEM_COMMON_SYSEX_START:
+        {
+            std::print(
+                "Event predelay: {:04d} System UNSUPPORTED MIDI_STATUS_SYSTEM_COMMON_SYSEX_START\n", event->predelay);
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_MTC_QUARTER_FRAME:
+        {
+            std::print(
+                "Event predelay: {:04d} System UNSUPPORTED MIDI_STATUS_SYSTEM_COMMON_MTC_QUARTER_FRAME\n",
+                event->predelay);
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_SONG_POSITION:
+        {
+            std::print(
+                "Event predelay: {:04d} System UNSUPPORTED MIDI_STATUS_SYSTEM_COMMON_SONG_POSITION\n", event->predelay);
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_SONG_SELECT:
+        {
+            std::print(
+                "Event predelay: {:04d} System UNSUPPORTED MIDI_STATUS_SYSTEM_COMMON_SONG_SELECT\n", event->predelay);
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_RESERVED_4:
+        {
+            std::print(
+                "Event predelay: {:04d} System UNSUPPORTED MIDI_STATUS_SYSTEM_COMMON_RESERVED_4\n", event->predelay);
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_UNOFFICIAL_BUS_SELECT:
+        {
+            std::print(
+                "Event predelay: {:04d} System UNSUPPORTED MIDI_STATUS_SYSTEM_COMMON_UNOFFICIAL_BUS_SELECT\n",
+                event->predelay);
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_TUNE_REQUEST:
+        {
+            std::print(
+                "Event predelay: {:04d} System UNSUPPORTED MIDI_STATUS_SYSTEM_COMMON_TUNE_REQUEST\n", event->predelay);
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_SYSEX_END:
+        {
+            // nothing to do here should not be seen
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_REALTIME_TIMING_TICK:
+        {
+            std::print(
+                "Event predelay: {:04d} System UNSUPPORTED MIDI_STATUS_SYSTEM_REALTIME_TIMING_TICK\n", event->predelay);
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_9:
+        {
+            std::print(
+                "Event predelay: {:04d} System UNSUPPORTED MIDI_STATUS_SYSTEM_REALTIME_RESERVED_9\n", event->predelay);
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_REALTIME_SONG_START:
+        {
+            std::print(
+                "Event predelay: {:04d} System UNSUPPORTED MIDI_STATUS_SYSTEM_REALTIME_SONG_START\n", event->predelay);
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_REALTIME_SONG_CONTINUE:
+        {
+            std::print(
+                "Event predelay: {:04d} System UNSUPPORTED MIDI_STATUS_SYSTEM_REALTIME_SONG_CONTINUE\n",
+                event->predelay);
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_REALTIME_SONG_STOP:
+        {
+            std::print(
+                "Event predelay: {:04d} System UNSUPPORTED MIDI_STATUS_SYSTEM_REALTIME_SONG_STOP\n", event->predelay);
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_13:
+        {
+            std::print(
+                "Event predelay: {:04d} System UNSUPPORTED MIDI_STATUS_SYSTEM_REALTIME_RESERVED_13\n", event->predelay);
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_REALTIME_ACTIVE_SENSING:
+        {
+            std::print(
+                "Event predelay: {:04d} System UNSUPPORTED MIDI_STATUS_SYSTEM_REALTIME_ACTIVE_SENSING\n",
+                event->predelay);
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_META:
+        {
+            midiHandleSystemMetaEvent(event);
+            break;
+        }
+
+        default: break;
     }
 }
 

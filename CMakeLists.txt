@@ -54,8 +54,10 @@ target_sources(${PROJECT_NAME}
 
     src/event/system/sysex.c
 
-    src/event/meta/channel.c
+    src/event/meta/channel_prefix.c
+    src/event/meta/port.c
     src/event/meta/sequence_number.c
+    src/event/meta/smpte_offset.c
     src/event/meta/tempo.c
     src/event/meta/text.c
     src/event/meta/time_signature.c
@@ -88,8 +90,10 @@ target_sources(${PROJECT_NAME}
     include/libmidi/event/system/sysex.h
     include/libmidi/event/system/united.h
 
-    include/libmidi/event/meta/channel.h
+    include/libmidi/event/meta/channel_prefix.h
+    include/libmidi/event/meta/port.h
     include/libmidi/event/meta/sequence_number.h
+    include/libmidi/event/meta/smpte_offset.h
     include/libmidi/event/meta/tempo.h
     include/libmidi/event/meta/text.h
     include/libmidi/event/meta/time_signature.h

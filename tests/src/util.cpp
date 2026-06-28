@@ -83,7 +83,7 @@ TEST(util, is_meta_text_event)
     EXPECT_TRUE(is_meta_text_event(MIDI_META_EVENT_PROGRAM_PATCH_NAME));
     EXPECT_TRUE(is_meta_text_event(MIDI_META_EVENT_DEVICE_PORT_NAME));
     EXPECT_FALSE(is_meta_text_event(MIDI_META_EVENT_SEQUENCE_NUMBER));
-    EXPECT_FALSE(is_meta_text_event(MIDI_META_EVENT_MIDI_CHANNEL));
+    EXPECT_FALSE(is_meta_text_event(MIDI_META_EVENT_MIDI_CHANNEL_PREFIX));
     EXPECT_FALSE(is_meta_text_event(MIDI_META_EVENT_MIDI_PORT));
     EXPECT_FALSE(is_meta_text_event(MIDI_META_EVENT_TRACK_END));
     EXPECT_FALSE(is_meta_text_event(MIDI_META_EVENT_TEMPO));

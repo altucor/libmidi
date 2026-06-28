@@ -56,7 +56,7 @@ void unmarshal_message_status_system_meta(midi_input_device_t* ctx)
             break;
         }
 
-        case MIDI_META_EVENT_MIDI_CHANNEL:
+        case MIDI_META_EVENT_MIDI_CHANNEL_PREFIX:
         {
             break;
         }
@@ -86,6 +86,8 @@ void unmarshal_message_status_system_meta(midi_input_device_t* ctx)
 
         case MIDI_META_EVENT_SMPTE_OFFSET:
         {
+            ret =
+                midi_smpte_offset_unmarshal(&ctx->event.meta.smpte_offset, ctx->buffer.data, ctx->buffer.expected_size);
             break;
         }
 
@@ -420,7 +422,7 @@ void handle_system_meta_event(midi_input_device_t* ctx, const uint8_t b)
         case MIDI_META_EVENT_CUE_POINT:
         case MIDI_META_EVENT_PROGRAM_PATCH_NAME:
         case MIDI_META_EVENT_DEVICE_PORT_NAME:
-        case MIDI_META_EVENT_MIDI_CHANNEL:
+        case MIDI_META_EVENT_MIDI_CHANNEL_PREFIX:
         case MIDI_META_EVENT_MIDI_PORT:
         case MIDI_META_EVENT_TRACK_END:
         case MIDI_META_EVENT_M_LIVE_TAG:

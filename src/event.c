@@ -55,7 +55,7 @@ void midi_event_copy(midi_event_t* dst, const midi_event_t* src)
             dst->meta.text = midi_text_event_new_from(&src->meta.text);
             break;
         }
-        case MIDI_META_EVENT_MIDI_CHANNEL:
+        case MIDI_META_EVENT_MIDI_CHANNEL_PREFIX:
         {
             break;
         }
@@ -129,7 +129,7 @@ void midi_event_cleanup(midi_event_t* ctx)
             midi_text_event_cleanup(&ctx->meta.text);
             break;
         }
-        case MIDI_META_EVENT_MIDI_CHANNEL:
+        case MIDI_META_EVENT_MIDI_CHANNEL_PREFIX:
         {
             break;
         }
