@@ -9,6 +9,7 @@ void handle_read_payload(midi_input_device_t* ctx, const uint8_t b);
 void handle_system_meta_event(midi_input_device_t* ctx, const uint8_t b);
 void handle_system_meta_event_payload_size(midi_input_device_t* ctx, const uint8_t b);
 void handle_sysex_payload_size(midi_input_device_t* ctx, const uint8_t b);
+void handle_sysex_payload_live(midi_input_device_t* ctx, const uint8_t b);
 
 void init_handlers(midi_input_device_t* ctx)
 {
@@ -20,6 +21,7 @@ void init_handlers(midi_input_device_t* ctx)
     ctx->handlers.arr[MIDI_INPUT_STATE_READ_META_PAYLOAD_SIZE] =
         (midi_cb_state_handler_f*)&handle_system_meta_event_payload_size;
     ctx->handlers.arr[MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_SIZE] = (midi_cb_state_handler_f*)&handle_sysex_payload_size;
+    ctx->handlers.arr[MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_LIVE] = (midi_cb_state_handler_f*)&handle_sysex_payload_live;
 }
 
 void unmarshal_message_status_system_meta(midi_input_device_t* ctx)
@@ -207,6 +209,19 @@ void unmarshal_message_status_system(midi_input_device_t* ctx)
 
         case MIDI_STATUS_SYSTEM_COMMON_SYSEX_END:
         {
+            if (ctx->smf)
+            {
+                // Should be not seen
+            }
+            else
+            {
+                ret = midi_sysex_unmarshal(&ctx->event.system.sysex, ctx->buffer.data, ctx->buffer.iterator_write);
+
+                ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
+                vlv_reset(&ctx->vlv);
+                buffer_reset(&ctx->buffer);
+            }
+
             break;
         }
 
@@ -501,6 +516,36 @@ void handle_sysex_payload_size(midi_input_device_t* ctx, const uint8_t b)
     ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
 }
 
+void handle_sysex_payload_live(midi_input_device_t* ctx, const uint8_t b)
+{
+    if (!ctx)
+    {
+        return;
+    }
+
+    buffer_append_u8(&ctx->buffer, b);
+
+    static const midi_cmd_t k_sysex_end = {
+        .new_msg = true, .status = MIDI_STATUS_SYSTEM, .system = MIDI_STATUS_SYSTEM_COMMON_SYSEX_END};
+
+    if (b == k_sysex_end.raw)
+    {
+        ctx->event.message.raw = b;
+
+        unmarshal_message_status(ctx);
+
+        // const int ret = midi_sysex_unmarshal(&ctx->event.system.sysex, ctx->buffer.data, ctx->buffer.expected_size);
+        // if (ret < 0 && ctx->listener && ctx->listener->error)
+        // {
+        //     ctx->listener->error(ctx->listener->handle, ret);
+        // }
+
+        // ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
+        // vlv_reset(&ctx->vlv);
+        // buffer_reset(&ctx->buffer);
+    }
+}
+
 void handle_system(midi_input_device_t* ctx, const uint8_t b)
 {
     if (!ctx)
@@ -512,10 +557,20 @@ void handle_system(midi_input_device_t* ctx, const uint8_t b)
     {
         case MIDI_STATUS_SYSTEM_COMMON_SYSEX_START:
         {
-            ctx->state = MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_SIZE;
             ctx->state_data.sysex_length = 0;
             vlv_reset(&ctx->vlv);
             buffer_reset(&ctx->buffer);
+
+            if (ctx->smf)
+            {
+                ctx->state = MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_SIZE;
+            }
+            else
+            {
+                buffer_set_expected_size(&ctx->buffer, BUFFER_SIZE);
+                ctx->state = MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_LIVE;
+            }
+
             break;
         }
 

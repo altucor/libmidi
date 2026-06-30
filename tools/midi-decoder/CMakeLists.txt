@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 4.0.0)
 
 set(TOP_LEVEL_PROJECT ${PROJECT_NAME})
-project(playground C CXX)
+project(midi-decoder C CXX)
 
 add_executable(${PROJECT_NAME})
 
@@ -14,6 +14,8 @@ target_sources(${PROJECT_NAME}
     PRIVATE
     src/main.cpp
 )
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -framework CoreMIDI -framework CoreAudio -framework AudioToolbox -framework CoreFoundation")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE midi)
 target_link_libraries(${PROJECT_NAME} PRIVATE common)
