@@ -23,6 +23,7 @@ void midi_note_reset(midi_note_t* ctx);
 int midi_note_unmarshal(midi_note_t* ctx, const midi_cmd_t cmd, const uint8_t* data, const uint32_t size);
 float midi_note_freq(midi_note_t* ctx);
 const char* midi_note_name(midi_note_t* ctx);
+int midi_note_marshal(const midi_note_t* ctx, uint8_t* data, const uint32_t size);
 
 #ifdef __cplusplus
 }

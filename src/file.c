@@ -138,3 +138,30 @@ mtrk_t* midi_file_get_track(midi_file_t* ctx, const uint16_t index)
 
     return ctx->mtrk[index];
 }
+
+int midi_file_add_track(midi_file_t* ctx, const mtrk_t* track)
+{
+    if (!ctx || !track || ctx->mthd.track_count == UINT16_MAX)
+    {
+        return -1;
+    }
+
+    if (ctx->mthd.track_count == 0)
+    {
+        ctx->mtrk = calloc(ctx->mthd.track_count + 1, sizeof(mtrk_t*));
+    }
+    else
+    {
+        ctx->mtrk = realloc(ctx->mtrk, sizeof(mtrk_t*) * (ctx->mthd.track_count + 1));
+    }
+
+    if (!ctx->mtrk)
+    {
+        return -1;
+    }
+
+    ctx->mtrk[ctx->mthd.track_count] = (mtrk_t*)track;
+    ctx->mthd.track_count++;
+
+    return 0;
+}

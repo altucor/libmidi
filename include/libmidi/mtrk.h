@@ -1,9 +1,10 @@
 #ifndef MIDI_MTRK_H
 #define MIDI_MTRK_H
 
+#include "libmidi/protocol.h"
 #include "libmidi/event.h"
 #include "libmidi/midi_input_device.h"
-#include "libmidi/protocol.h"
+#include "libmidi/midi_output_device.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -12,6 +13,7 @@ typedef struct _mtrk
 {
     midi_error_e error;
     midi_input_device_t* device;
+    midi_output_device_t* device_out;
     midi_device_callback_data_t cb;
     char mtrk[MTRK_MARKER_SIZE];
     uint32_t size;
@@ -35,6 +37,7 @@ int32_t mtrk_find_event_index(
     const midi_cmd_t cmd,
     const uint8_t message_meta);
 uint64_t mtrk_get_duration(mtrk_t* ctx);
+int mtrk_add_event(mtrk_t* ctx, const midi_event_t* event);
 
 #ifdef __cplusplus
 }

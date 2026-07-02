@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 
+#define MIDI_BAUD_RATE_DEFAULT (31250)
+
 #define MIDI_NOTES_IN_OCTAVE (12)
 #define MIDI_CHANNELS_MAX_COUNT (16)
 #define MIDI_CONTROLLERS_MAX_COUNT (128)

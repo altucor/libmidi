@@ -24,6 +24,7 @@ int midi_file_unmarshal_feed(midi_file_t* ctx, const uint8_t* data, const uint32
 mthd_t midi_file_get_mthd(midi_file_t* ctx);
 uint16_t midi_file_get_tracks_count(midi_file_t* ctx);
 mtrk_t* midi_file_get_track(midi_file_t* ctx, const uint16_t index);
+int midi_file_add_track(midi_file_t* ctx, const mtrk_t* track);
 
 #ifdef __cplusplus
 }

@@ -5,111 +5,213 @@
 
 #include <stdbool.h>
 #include <vector>
+#include <memory>
+#include <span>
 
-typedef void(midi_feed_cb_f)(void* /* ctx */, const uint8_t /* byte */);
-
-class MidiPortInput
+namespace midi
 {
-public:
-    MidiPortInput(const MidiPortInput& other) = delete;
-    MidiPortInput& operator=(const MidiPortInput& other) = delete;
 
-    MidiPortInput(const MIDIClientRef& client)
-        : m_client(client)
+    typedef void(midi_feed_cb_f)(void* /* ctx */, const uint8_t /* byte */);
+    typedef void(midi_input_cb_f)(void* /* ctx */, const uint8_t* /* data */, const uint32_t /* size */);
+
+    class DriverMacOs
     {
-    }
+    public:
+        DriverMacOs(const DriverMacOs& other) = delete;
+        void operator=(DriverMacOs const& other) = delete;
 
-    ~MidiPortInput()
-    {
-        MIDIEndpointDispose(m_source);
-        MIDIPortDispose(m_inputPort);
-    }
-
-    int registerClient(const std::size_t portIndex, midi_feed_cb_f* callback, void* ctx = nullptr)
-    {
-        m_midiCb = callback;
-        m_midiCtx = ctx;
-
-        // Get the first MIDI input source
-        ItemCount sourceCount = MIDIGetNumberOfSources();
-        if (sourceCount == 0)
+        ~DriverMacOs()
         {
-            fprintf(stderr, "No MIDI sources found.\n");
-            return -1;
+            MIDIClientDispose(m_client);
         }
 
-        // Create a MIDI input port
-        OSStatus ret = MIDIInputPortCreate(
-            m_client, CFSTR("Input Port"), (MIDIReadProc)&midiInputCallback, (void*)this, &m_inputPort);
-
-        m_source = MIDIGetSource(portIndex);
-        // Connect the input port to the MIDI source
-        ret = MIDIPortConnectSource(m_inputPort, m_source, NULL);
-
-        return ret;
-    }
-
-private:
-    static void midiInputCallback(const MIDIPacketList* packetList, void* obj, void* srcConnRefCon)
-    {
-        if (!obj)
+        static DriverMacOs& getInstance()
         {
-            return;
+            static DriverMacOs m_instance;
+            return m_instance;
         }
 
-        auto ctx = reinterpret_cast<MidiPortInput*>(obj);
-
-        for (int i = 0; i < packetList->numPackets; ++i)
+        const std::size_t getInputsCount() noexcept
         {
-            MIDIPacket packet = packetList->packet[i];
-            for (int j = 0; j < packet.length; ++j)
-            {
-                ctx->m_midiCb(ctx->m_midiCtx, packet.data[j]);
-            }
+            return MIDIGetNumberOfSources();
         }
-    }
 
-private:
-    const MIDIClientRef& m_client = 0;
-    MIDIPortRef m_inputPort = 0;
-    MIDIEndpointRef m_source = 0;
+        const std::size_t getOutputsCount() noexcept
+        {
+            return MIDIGetNumberOfDestinations();
+        }
 
-    midi_feed_cb_f* m_midiCb = NULL;
-    void* m_midiCtx = NULL;
-};
+        const auto& getRef() noexcept
+        {
+            return m_client;
+        }
 
-// ------------
+    private:
+        explicit DriverMacOs()
+        {
+            m_status = MIDIClientCreate(CFSTR("Driver libmidi MacOS"), NULL, NULL, &m_client);
+        };
 
-class MacOsMidiDriver
-{
-public:
-    MacOsMidiDriver()
-    {
-        MIDIClientCreate(CFSTR("MIDI Driver Input"), NULL, NULL, &m_client);
+    private:
+        OSStatus m_status = 0;
+        MIDIClientRef m_client = 0;
     };
 
-    ~MacOsMidiDriver()
+    class PortInput
     {
-        MIDIClientDispose(m_client);
-    }
+    public:
+        PortInput(const PortInput& other) = delete;
+        PortInput& operator=(const PortInput& other) = delete;
+        PortInput(const PortInput&& rhs) = delete;
+        PortInput& operator=(PortInput&& rhs) = delete;
 
-    std::size_t getSourcesCount()
+        ~PortInput()
+        {
+            MIDIPortDisconnectSource(m_port, m_endpoint);
+            MIDIEndpointDispose(m_endpoint);
+            MIDIPortDispose(m_port);
+        }
+
+        static std::unique_ptr<PortInput> create(
+            const std::size_t portIndex,
+            midi_input_cb_f* callback,
+            void* ctx = nullptr)
+        {
+            auto port = std::unique_ptr<PortInput>(new PortInput());
+
+            const auto inputsCount = DriverMacOs::getInstance().getInputsCount();
+            if (!inputsCount || portIndex >= inputsCount)
+            {
+                return port;
+            }
+
+            port->m_midiCb = callback;
+            port->m_midiCtx = ctx;
+
+            OSStatus ret = MIDIInputPortCreate(
+                DriverMacOs::getInstance().getRef(),
+                CFSTR("Input Port"),
+                (MIDIReadProc)&PortInput::midiInputCallback,
+                (void*)port.get(),
+                &port->m_port);
+
+            if (ret != 0)
+            {
+                return port;
+            }
+
+            port->m_endpoint = MIDIGetSource(portIndex);
+            ret = MIDIPortConnectSource(port->m_port, port->m_endpoint, NULL);
+
+            // MIDIEndpointRef destination = MIDIGetDestination(0);
+
+            return port;
+        }
+
+    private:
+        PortInput()
+        {
+        }
+
+        static void midiInputCallback(const MIDIPacketList* packetList, void* obj, void* srcConnRefCon)
+        {
+            if (!obj)
+            {
+                return;
+            }
+
+            auto ctx = reinterpret_cast<PortInput*>(obj);
+            if (!ctx->m_midiCb || !ctx->m_midiCtx)
+            {
+                return;
+            }
+
+            for (int i = 0; i < packetList->numPackets; ++i)
+            {
+                MIDIPacket packet = packetList->packet[i];
+                ctx->m_midiCb(ctx->m_midiCtx, packet.data, packet.length);
+            }
+        }
+
+    private:
+        MIDIPortRef m_port = 0;
+        MIDIEndpointRef m_endpoint = 0;
+
+        midi_input_cb_f* m_midiCb = nullptr;
+        void* m_midiCtx = nullptr;
+    };
+
+    // ------------------------------------------------
+
+    class PortOutput
     {
-        return MIDIGetNumberOfSources();
-    }
+    public:
+        PortOutput(const PortOutput& other) = delete;
+        PortOutput& operator=(const PortOutput& other) = delete;
+        PortOutput(const PortOutput&& rhs) = delete;
+        PortOutput& operator=(const PortOutput&& other) = delete;
 
-    int registerInput(const std::size_t portIndex, midi_feed_cb_f* callback, void* ctx = nullptr)
-    {
-        auto port = std::make_unique<MidiPortInput>(m_client);
-        port->registerClient(portIndex, callback, ctx);
-        m_ports.push_back(std::move(port));
+        ~PortOutput()
+        {
+            MIDIEndpointDispose(m_endpoint);
+            MIDIPortDispose(m_port);
+        }
 
-        std::print("DBG: {:d}\n", m_ports.size());
+        static std::unique_ptr<PortOutput> create(const std::size_t portIndex)
+        {
+            auto port = std::unique_ptr<PortOutput>(new PortOutput());
 
-        return 0;
-    }
+            const auto outputsCount = DriverMacOs::getInstance().getOutputsCount();
+            if (!outputsCount || portIndex >= outputsCount)
+            {
+                return port;
+            }
 
-private:
-    MIDIClientRef m_client = 0;
-    std::vector<std::unique_ptr<MidiPortInput>> m_ports = {};
-};
+            OSStatus ret =
+                MIDIOutputPortCreate(DriverMacOs::getInstance().getRef(), CFSTR("Output Port"), &port->m_port);
+
+            if (ret != 0)
+            {
+                return port;
+            }
+
+            port->m_endpoint = MIDIGetDestination(portIndex);
+
+            return port;
+        }
+
+        int sendData(const std::span<const std::byte>& data)
+        {
+            MIDIPacketList packetList;
+            MIDIPacket* packet = MIDIPacketListInit(&packetList);
+
+            packet = MIDIPacketListAdd(
+                &packetList, sizeof(packetList), packet, 0, data.size(), reinterpret_cast<const Byte*>(data.data()));
+
+            OSStatus ret = MIDISend(m_port, m_endpoint, &packetList);
+            if (ret != 0)
+            {
+                return ret;
+            }
+
+            return data.size();
+        }
+
+        int sendData(const uint8_t* data, const uint32_t size)
+        {
+            return sendData(
+                std::vector<std::byte>(
+                    reinterpret_cast<const std::byte*>(data), reinterpret_cast<const std::byte*>(data + size)));
+        }
+
+    private:
+        PortOutput()
+        {
+        }
+
+    private:
+        MIDIPortRef m_port = 0;
+        MIDIEndpointRef m_endpoint = 0;
+    };
+
+}

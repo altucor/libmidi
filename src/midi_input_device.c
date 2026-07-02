@@ -13,15 +13,17 @@ void handle_sysex_payload_live(midi_input_device_t* ctx, const uint8_t b);
 
 void init_handlers(midi_input_device_t* ctx)
 {
-    ctx->handlers.arr[MIDI_INPUT_STATE_READY_TO_NEW] = (midi_cb_state_handler_f*)&handle_ready_to_new;
-    ctx->handlers.arr[MIDI_INPUT_STATE_PREDELAY] = (midi_cb_state_handler_f*)&handle_predelay;
-    ctx->handlers.arr[MIDI_INPUT_STATE_NEW_MESSAGE] = (midi_cb_state_handler_f*)&handle_new_message;
-    ctx->handlers.arr[MIDI_INPUT_STATE_READ_PAYLOAD] = (midi_cb_state_handler_f*)&handle_read_payload;
-    ctx->handlers.arr[MIDI_INPUT_STATE_SYSTEM_META] = (midi_cb_state_handler_f*)&handle_system_meta_event;
+    ctx->handlers.arr[MIDI_INPUT_STATE_READY_TO_NEW] = (midi_cb_input_state_handler_f*)&handle_ready_to_new;
+    ctx->handlers.arr[MIDI_INPUT_STATE_PREDELAY] = (midi_cb_input_state_handler_f*)&handle_predelay;
+    ctx->handlers.arr[MIDI_INPUT_STATE_NEW_MESSAGE] = (midi_cb_input_state_handler_f*)&handle_new_message;
+    ctx->handlers.arr[MIDI_INPUT_STATE_READ_PAYLOAD] = (midi_cb_input_state_handler_f*)&handle_read_payload;
+    ctx->handlers.arr[MIDI_INPUT_STATE_SYSTEM_META] = (midi_cb_input_state_handler_f*)&handle_system_meta_event;
     ctx->handlers.arr[MIDI_INPUT_STATE_READ_META_PAYLOAD_SIZE] =
-        (midi_cb_state_handler_f*)&handle_system_meta_event_payload_size;
-    ctx->handlers.arr[MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_SIZE] = (midi_cb_state_handler_f*)&handle_sysex_payload_size;
-    ctx->handlers.arr[MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_LIVE] = (midi_cb_state_handler_f*)&handle_sysex_payload_live;
+        (midi_cb_input_state_handler_f*)&handle_system_meta_event_payload_size;
+    ctx->handlers.arr[MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_SIZE] =
+        (midi_cb_input_state_handler_f*)&handle_sysex_payload_size;
+    ctx->handlers.arr[MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_LIVE] =
+        (midi_cb_input_state_handler_f*)&handle_sysex_payload_live;
 }
 
 void unmarshal_message_status_system_meta(midi_input_device_t* ctx)
@@ -188,6 +190,8 @@ void unmarshal_message_status_system(midi_input_device_t* ctx)
         }
 
         case MIDI_STATUS_SYSTEM_COMMON_RESERVED_4:
+        case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_9:
+        case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_13:
         {
             if (ctx->listener && ctx->listener->error)
             {
@@ -198,11 +202,12 @@ void unmarshal_message_status_system(midi_input_device_t* ctx)
         }
 
         case MIDI_STATUS_SYSTEM_COMMON_UNOFFICIAL_BUS_SELECT:
-        {
-            break;
-        }
-
         case MIDI_STATUS_SYSTEM_COMMON_TUNE_REQUEST:
+        case MIDI_STATUS_SYSTEM_REALTIME_TIMING_TICK:
+        case MIDI_STATUS_SYSTEM_REALTIME_SONG_START:
+        case MIDI_STATUS_SYSTEM_REALTIME_SONG_CONTINUE:
+        case MIDI_STATUS_SYSTEM_REALTIME_SONG_STOP:
+        case MIDI_STATUS_SYSTEM_REALTIME_ACTIVE_SENSING:
         {
             break;
         }
@@ -222,51 +227,6 @@ void unmarshal_message_status_system(midi_input_device_t* ctx)
                 buffer_reset(&ctx->buffer);
             }
 
-            break;
-        }
-
-        case MIDI_STATUS_SYSTEM_REALTIME_TIMING_TICK:
-        {
-            break;
-        }
-
-        case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_9:
-        {
-            if (ctx->listener && ctx->listener->error)
-            {
-                ctx->listener->error(ctx->listener->handle, MIDI_ERROR_UNEXPECTED_SYSTEM_RESERVED);
-            }
-
-            break;
-        }
-
-        case MIDI_STATUS_SYSTEM_REALTIME_SONG_START:
-        {
-            break;
-        }
-
-        case MIDI_STATUS_SYSTEM_REALTIME_SONG_CONTINUE:
-        {
-            break;
-        }
-
-        case MIDI_STATUS_SYSTEM_REALTIME_SONG_STOP:
-        {
-            break;
-        }
-
-        case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_13:
-        {
-            if (ctx->listener && ctx->listener->error)
-            {
-                ctx->listener->error(ctx->listener->handle, MIDI_ERROR_UNEXPECTED_SYSTEM_RESERVED);
-            }
-
-            break;
-        }
-
-        case MIDI_STATUS_SYSTEM_REALTIME_ACTIVE_SENSING:
-        {
             break;
         }
 
@@ -381,7 +341,6 @@ void unmarshal_message_status(midi_input_device_t* ctx)
             return;
         }
 
-        case MIDI_STATUS_COUNT:
         default:
         {
             ret = MIDI_ERROR_UNEXPECTED_STATUS;
@@ -575,6 +534,7 @@ void handle_system(midi_input_device_t* ctx, const uint8_t b)
         }
 
         case MIDI_STATUS_SYSTEM_COMMON_MTC_QUARTER_FRAME:
+        case MIDI_STATUS_SYSTEM_COMMON_SONG_SELECT:
         {
             buffer_set_expected_size(&ctx->buffer, 1);
             ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
@@ -588,14 +548,10 @@ void handle_system(midi_input_device_t* ctx, const uint8_t b)
             break;
         }
 
-        case MIDI_STATUS_SYSTEM_COMMON_SONG_SELECT:
-        {
-            buffer_set_expected_size(&ctx->buffer, 1);
-            ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
-            break;
-        }
-
         case MIDI_STATUS_SYSTEM_COMMON_RESERVED_4:
+        case MIDI_STATUS_SYSTEM_COMMON_SYSEX_END:
+        case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_9:
+        case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_13:
         {
             break;
         }
@@ -606,100 +562,10 @@ void handle_system(midi_input_device_t* ctx, const uint8_t b)
         }
 
         case MIDI_STATUS_SYSTEM_COMMON_TUNE_REQUEST:
-        {
-            ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
-            ctx->event.message_meta = 0;
-            ctx->state_data.meta_length = 0;
-            buffer_reset(&ctx->buffer);
-            vlv_reset(&ctx->vlv);
-
-            if (ctx->listener && ctx->listener->event)
-            {
-                ctx->listener->event(ctx->listener->handle, &ctx->event);
-            }
-
-            break;
-        }
-
-        case MIDI_STATUS_SYSTEM_COMMON_SYSEX_END:
-        {
-            break;
-        }
-
         case MIDI_STATUS_SYSTEM_REALTIME_TIMING_TICK:
-        {
-            ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
-            ctx->event.message_meta = 0;
-            ctx->state_data.meta_length = 0;
-            buffer_reset(&ctx->buffer);
-            vlv_reset(&ctx->vlv);
-
-            if (ctx->listener && ctx->listener->event)
-            {
-                ctx->listener->event(ctx->listener->handle, &ctx->event);
-            }
-
-            break;
-        }
-
-        case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_9:
-        {
-            break;
-        }
-
         case MIDI_STATUS_SYSTEM_REALTIME_SONG_START:
-        {
-            ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
-            ctx->event.message_meta = 0;
-            ctx->state_data.meta_length = 0;
-            buffer_reset(&ctx->buffer);
-            vlv_reset(&ctx->vlv);
-
-            if (ctx->listener && ctx->listener->event)
-            {
-                ctx->listener->event(ctx->listener->handle, &ctx->event);
-            }
-
-            break;
-        }
-
         case MIDI_STATUS_SYSTEM_REALTIME_SONG_CONTINUE:
-        {
-            ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
-            ctx->event.message_meta = 0;
-            ctx->state_data.meta_length = 0;
-            buffer_reset(&ctx->buffer);
-            vlv_reset(&ctx->vlv);
-
-            if (ctx->listener && ctx->listener->event)
-            {
-                ctx->listener->event(ctx->listener->handle, &ctx->event);
-            }
-
-            break;
-        }
-
         case MIDI_STATUS_SYSTEM_REALTIME_SONG_STOP:
-        {
-            ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
-            ctx->event.message_meta = 0;
-            ctx->state_data.meta_length = 0;
-            buffer_reset(&ctx->buffer);
-            vlv_reset(&ctx->vlv);
-
-            if (ctx->listener && ctx->listener->event)
-            {
-                ctx->listener->event(ctx->listener->handle, &ctx->event);
-            }
-
-            break;
-        }
-
-        case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_13:
-        {
-            break;
-        }
-
         case MIDI_STATUS_SYSTEM_REALTIME_ACTIVE_SENSING:
         {
             ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;

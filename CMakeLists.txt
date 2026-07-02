@@ -43,6 +43,7 @@ target_sources(${PROJECT_NAME}
     src/event.c
     src/file.c
     src/midi_input_device.c
+    src/midi_output_device.c
     src/mthd.c
     src/mtrk.c
     src/util.c
@@ -87,6 +88,7 @@ target_sources(${PROJECT_NAME}
     include/libmidi/mthd.h
     include/libmidi/file.h
     include/libmidi/midi_input_device.h
+    include/libmidi/midi_output_device.h
 
     include/libmidi/event/standard/note.h
     include/libmidi/event/standard/pitch.h

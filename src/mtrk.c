@@ -14,33 +14,33 @@ void mtrk_handle_error(mtrk_t* ctx, const midi_error_e error)
     ctx->error = error;
 }
 
-void mtrk_handle_event(mtrk_t* ctx, const midi_event_t* event)
-{
-    if (!ctx)
-    {
-        return;
-    }
+// void mtrk_handle_event(mtrk_t* ctx, const midi_event_t* event)
+// {
+//     if (!ctx)
+//     {
+//         return;
+//     }
 
-    if (ctx->events_count == 0)
-    {
-        ctx->events = calloc(ctx->events_count + 1, sizeof(midi_event_t));
-    }
-    else
-    {
-        ctx->events = realloc(ctx->events, sizeof(midi_event_t) * (ctx->events_count + 1));
-    }
+//     if (ctx->events_count == 0)
+//     {
+//         ctx->events = calloc(ctx->events_count + 1, sizeof(midi_event_t));
+//     }
+//     else
+//     {
+//         ctx->events = realloc(ctx->events, sizeof(midi_event_t) * (ctx->events_count + 1));
+//     }
 
-    midi_event_t* event_copy = midi_event_new();
-    if (!event_copy)
-    {
-        return;
-    }
+//     midi_event_t* event_copy = midi_event_new();
+//     if (!event_copy)
+//     {
+//         return;
+//     }
 
-    midi_event_copy(event_copy, event);
+//     midi_event_copy(event_copy, event);
 
-    ctx->events[ctx->events_count] = event_copy;
-    ctx->events_count++;
-}
+//     ctx->events[ctx->events_count] = event_copy;
+//     ctx->events_count++;
+// }
 
 mtrk_t* mtrk_new(midi_input_device_t* device)
 {
@@ -68,7 +68,7 @@ mtrk_t* mtrk_new(midi_input_device_t* device)
     ctx->events = NULL;
 
     ctx->cb.handle = ctx;
-    ctx->cb.event = (midi_cb_event_f*)&mtrk_handle_event;
+    ctx->cb.event = (midi_cb_event_f*)&mtrk_add_event;
     midi_input_device_set_listener(ctx->device, &ctx->cb);
     return ctx;
 }
@@ -99,7 +99,6 @@ static bool is_track_end_event(const midi_event_t* event)
 {
     return event->message.status == MIDI_STATUS_SYSTEM && event->message.system == MIDI_STATUS_SYSTEM_COMMON_META &&
            event->message_meta == MIDI_META_EVENT_TRACK_END;
-    // return false;
 }
 
 int mtrk_unmarshal(mtrk_t* ctx, const uint8_t* data, const uint32_t size)
@@ -199,4 +198,39 @@ uint64_t mtrk_get_duration(mtrk_t* ctx)
     }
 
     return total;
+}
+
+int mtrk_add_event(mtrk_t* ctx, const midi_event_t* event)
+{
+    if (!ctx || !event || !event->message.new_msg || ctx->events_count == UINT32_MAX)
+    {
+        return -1;
+    }
+
+    if (ctx->events_count == 0)
+    {
+        ctx->events = calloc(ctx->events_count + 1, sizeof(midi_event_t));
+    }
+    else
+    {
+        ctx->events = realloc(ctx->events, sizeof(midi_event_t) * (ctx->events_count + 1));
+    }
+
+    if (!ctx->events)
+    {
+        return -1;
+    }
+
+    midi_event_t* event_copy = midi_event_new();
+    if (!event_copy)
+    {
+        return -1;
+    }
+
+    midi_event_copy(event_copy, event);
+
+    ctx->events[ctx->events_count] = event_copy;
+    ctx->events_count++;
+
+    return 0;
 }

@@ -18,6 +18,11 @@
     3. Should be able connect to MIDI input port and listen to all events and print them live
     4. Add ability to use UART/COM/TTY for receiving ???
     5. Add ability to act as proxy dumper by opening IN/OUT and listening for events
+    6. QWERTY Keybaord as piano in Ableton/FL Studio layout and chose where to output, file/port/hex bytes
+    7. Add ability to work as router, opening several inputs and outputs and routing data. For example opening SMF and
+   streaming it to the port
+    8. Add ability to encode MIDI commands standard/system/meta. NOTE: It probably will require much complex argument
+   handling because use should be able to enter for example several NOTE_ON events with different pitch and velocity
 */
 
 int g_lastRetValue = 0;
@@ -43,71 +48,113 @@ struct KeyValue
     std::string value;
 };
 
-class Config
+struct Config
 {
-public:
-    explicit Config(int argc, char* argv[])
-    {
-        for (std::size_t i = 1; i < argc; i++)
-        {
-            // Minimal reference
-            // "--k=v"
-
-            auto argument = std::string(argv[i]);
-            static const std::size_t kMinimumKvSize = 5;
-            if (argument.size() < kMinimumKvSize)
-            {
-                continue;
-            }
-
-            if (argument.at(0) != '-' && argument.at(1) != '-')
-            {
-                continue;
-            }
-
-            auto delimiterIndex = argument.find('=');
-
-            // delimiter cannot be earlier than at index 3
-            if (delimiterIndex < 3 || delimiterIndex == std::string::npos)
-            {
-                continue;
-            }
-
-            auto kv = KeyValue(argument, delimiterIndex);
-
-            if (kv.key == "file")
-            {
-                mode = MODE_FILE;
-                filePath = kv.value;
-            }
-            else if (kv.key == "port")
-            {
-                mode = MODE_PORT;
-                port = kv.value;
-                // OS/Platform specific specify midi port for listening ???
-            }
-            else if (kv.key == "data")
-            {
-                mode = MODE_DATA;
-                data = kv.value;
-            }
-            else if (kv.key == "smf" && (kv.value == "1" || kv.value == "true"))
-            {
-                smfData = true;
-            }
-            else
-            {
-                g_lastRetValue = -1;
-            }
-        }
-    }
-
     Mode mode = MODE_FILE;
     bool smfData = false;
     std::string port = "";
     std::filesystem::path filePath = "";
     std::string data = "";
 };
+
+int argumentsParse(int argc, char* argv[], Config& config)
+{
+    for (std::size_t i = 1; i < argc; i++)
+    {
+        // Minimal reference
+        // "--k=v"
+
+        auto argument = std::string(argv[i]);
+        static const std::size_t kMinimumKvSize = 5;
+        if (argument.size() < kMinimumKvSize)
+        {
+            return -1;
+        }
+
+        if (argument.at(0) != '-' && argument.at(1) != '-')
+        {
+            return -1;
+        }
+
+        auto delimiterIndex = argument.find('=');
+
+        // delimiter cannot be earlier than at index 3
+        if (delimiterIndex < 3 || delimiterIndex == std::string::npos)
+        {
+            return -1;
+        }
+
+        auto kv = KeyValue(argument, delimiterIndex);
+
+        if (kv.key == "file")
+        {
+            config.mode = MODE_FILE;
+            config.filePath = kv.value;
+        }
+        else if (kv.key == "port")
+        {
+            config.mode = MODE_PORT;
+            config.port = kv.value;
+            // OS/Platform specific specify midi port for listening ???
+        }
+        else if (kv.key == "data")
+        {
+            config.mode = MODE_DATA;
+            config.data = kv.value;
+        }
+        else if (kv.key == "smf" && (kv.value == "1" || kv.value == "true"))
+        {
+            config.smfData = true;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+void errorHandler(void* ctx, const midi_error_e err)
+{
+    g_lastRetValue = err;
+
+    auto midiErrorToString = [](const midi_error_e err)
+    {
+        switch (err)
+        {
+            case MIDI_ERROR_OK: return "MIDI_ERROR_OK";
+            case MIDI_ERROR_GENERAL: return "MIDI_ERROR_GENERAL";
+            case MIDI_ERROR_INVALID_POINTER: return "MIDI_ERROR_INVALID_POINTER";
+            case MIDI_ERROR_NOT_ENOUGH_DATA: return "MIDI_ERROR_NOT_ENOUGH_DATA";
+            case MIDI_ERROR_NOT_DATA: return "MIDI_ERROR_NOT_DATA";
+            case MIDI_ERROR_NOT_NEW_MESSAGE: return "MIDI_ERROR_NOT_NEW_MESSAGE";
+            case MIDI_ERROR_STATUS_INVALID: return "MIDI_ERROR_STATUS_INVALID";
+            case MIDI_ERROR_MTHD_INVALID_MARKER: return "MIDI_ERROR_MTHD_INVALID_MARKER";
+            case MIDI_ERROR_MTHD_INVALID_FORMAT: return "MIDI_ERROR_MTHD_INVALID_FORMAT";
+            case MIDI_ERROR_MTRK_INVALID_MARKER: return "MIDI_ERROR_MTRK_INVALID_MARKER";
+            case MIDI_ERROR_MTRK_NOT_FULLY_PROCESSED: return "MIDI_ERROR_MTRK_NOT_FULLY_PROCESSED";
+            case MIDI_ERROR_UNEXPECTED_STATUS: return "MIDI_ERROR_UNEXPECTED_STATUS";
+            case MIDI_ERROR_UNEXPECTED_SYSTEM_RESERVED: return "MIDI_ERROR_UNEXPECTED_SYSTEM_RESERVED";
+
+            default: return "<UNKNOWN>";
+        }
+    };
+
+    std::print("[midi-decoder] Error: 0x{:04X} - {:s}\n", static_cast<uint32_t>(err), midiErrorToString(err));
+}
+
+void eventHandler(void* ctx, const midi_event_t* event)
+{
+    std::print("[midi-decoder] ");
+    midiHandleEvent(event);
+}
+
+void eventHandlerRealtime(void* ctx, const midi_event_t* event)
+{
+    std::print("[{:%Y-%m-%d %H:%M:%S}] [midi-decoder] ", std::chrono::system_clock::now());
+    midiHandleEvent(event);
+}
 
 int handleFile(const std::filesystem::path& path)
 {
@@ -166,7 +213,7 @@ int handleFile(const std::filesystem::path& path)
                 return -1;
             }
 
-            midiHandleEvent(event);
+            eventHandler(nullptr, event);
         }
     }
 
@@ -210,47 +257,6 @@ void removeAll(std::string& data, const std::string& key)
 
         data.replace(pos, key.size(), "");
     }
-}
-
-void errorHandler(void* ctx, const midi_error_e err)
-{
-    g_lastRetValue = err;
-
-    auto midiErrorToString = [](const midi_error_e err)
-    {
-        switch (err)
-        {
-            case MIDI_ERROR_OK: return "MIDI_ERROR_OK";
-            case MIDI_ERROR_GENERAL: return "MIDI_ERROR_GENERAL";
-            case MIDI_ERROR_INVALID_POINTER: return "MIDI_ERROR_INVALID_POINTER";
-            case MIDI_ERROR_NOT_ENOUGH_DATA: return "MIDI_ERROR_NOT_ENOUGH_DATA";
-            case MIDI_ERROR_NOT_DATA: return "MIDI_ERROR_NOT_DATA";
-            case MIDI_ERROR_NOT_NEW_MESSAGE: return "MIDI_ERROR_NOT_NEW_MESSAGE";
-            case MIDI_ERROR_STATUS_INVALID: return "MIDI_ERROR_STATUS_INVALID";
-            case MIDI_ERROR_MTHD_INVALID_MARKER: return "MIDI_ERROR_MTHD_INVALID_MARKER";
-            case MIDI_ERROR_MTHD_INVALID_FORMAT: return "MIDI_ERROR_MTHD_INVALID_FORMAT";
-            case MIDI_ERROR_MTRK_INVALID_MARKER: return "MIDI_ERROR_MTRK_INVALID_MARKER";
-            case MIDI_ERROR_MTRK_NOT_FULLY_PROCESSED: return "MIDI_ERROR_MTRK_NOT_FULLY_PROCESSED";
-            case MIDI_ERROR_UNEXPECTED_STATUS: return "MIDI_ERROR_UNEXPECTED_STATUS";
-            case MIDI_ERROR_UNEXPECTED_SYSTEM_RESERVED: return "MIDI_ERROR_UNEXPECTED_SYSTEM_RESERVED";
-
-            default: return "<UNKNOWN>";
-        }
-    };
-
-    std::print("[midi-decoder] Error: 0x{:04X} - {:s}\n", static_cast<uint32_t>(err), midiErrorToString(err));
-}
-
-void eventHandler(void* ctx, const midi_event_t* event)
-{
-    std::print("[midi-decoder] ");
-    midiHandleEvent(event);
-}
-
-void eventHandlerRealtime(void* ctx, const midi_event_t* event)
-{
-    std::print("[{:%Y-%m-%d %H:%M:%S}] [midi-decoder] ", std::chrono::system_clock::now());
-    midiHandleEvent(event);
 }
 
 int handleData(std::string& data, const bool smf)
@@ -317,21 +323,21 @@ int handlePort(const std::string& portText)
         return -1;
     }
 
-    const std::size_t port = std::stoul(portText, nullptr, 10);
+    const std::size_t portNumber = std::stoul(portText, nullptr, 10);
 
-    MacOsMidiDriver driver;
+    // MacOsMidiDriver driver;
 
-    if (!driver.getSourcesCount())
-    {
-        std::print("[midi-decoder] No available MIDI source ports\n");
-        return -1;
-    }
+    // if (!driver.getSourcesCount())
+    // {
+    //     std::print("[midi-decoder] No available MIDI source ports\n");
+    //     return -1;
+    // }
 
-    if (port >= driver.getSourcesCount())
-    {
-        std::print("[midi-decoder] MIDI port number is out of range\n");
-        return -1;
-    }
+    // if (port >= driver.getSourcesCount())
+    // {
+    //     std::print("[midi-decoder] MIDI port number is out of range\n");
+    //     return -1;
+    // }
 
     midi_input_device_t* device = midi_input_device_new(false);
     if (!device)
@@ -345,11 +351,14 @@ int handlePort(const std::string& portText)
     cb.event = &eventHandlerRealtime;
 
     midi_input_device_set_listener(device, &cb);
-    driver.registerInput(port, (midi_feed_cb_f*)&midi_input_device_feed, device);
+    // driver.registerInput(port, (midi_input_cb_f*)&midi_input_device_feed_chunk, device);
+
+    auto port = midi::PortInput::create(portNumber, (midi::midi_input_cb_f*)&midi_input_device_feed_chunk, device);
 
     while (true)
     {
         // wait here??
+        // TODO: wait for some OS specific notifications about closing
     }
 
     midi_input_device_free(device);
@@ -384,10 +393,12 @@ int main(int argc, char* argv[])
         return help(argv[0]);
     }
 
-    Config cfg(argc, argv);
+    Config cfg;
+    g_lastRetValue = argumentsParse(argc, argv, cfg);
 
     if (g_lastRetValue != 0)
     {
+        std::print("[midi-decoder] Error occured: 0x{:02X}\n", static_cast<uint32_t>(g_lastRetValue));
         return g_lastRetValue;
     }
 

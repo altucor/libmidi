@@ -36,8 +36,8 @@ typedef struct _midi_device_callback_data
     // midi_cb_tempo_f* tempo;
 } midi_device_callback_data_t;
 
-typedef void(midi_cb_state_handler_f)(void* ctx, const uint8_t b);
-typedef enum _midi_input_state
+typedef void(midi_cb_input_state_handler_f)(void* ctx, const uint8_t b);
+typedef enum _midi_input_state_t
 {
     MIDI_INPUT_STATE_READY_TO_NEW = 0,
     MIDI_INPUT_STATE_PREDELAY,
@@ -50,18 +50,18 @@ typedef enum _midi_input_state
     MIDI_INPUT_STATE_COUNT
 } midi_input_state_t;
 
-typedef struct _input_state_handlers
+typedef struct _input_state_handlers_t
 {
-    midi_cb_state_handler_f* arr[MIDI_INPUT_STATE_COUNT];
+    midi_cb_input_state_handler_f* arr[MIDI_INPUT_STATE_COUNT];
 } input_state_handlers_t;
 
-typedef struct _midi_input_state_data
+typedef struct _midi_input_state_data_t
 {
     uint32_t meta_length;
     uint32_t sysex_length;
 } midi_input_state_data_t;
 
-typedef struct _midi_input_device
+typedef struct _midi_input_device_t
 {
     input_state_handlers_t handlers;
     midi_device_callback_data_t* listener;

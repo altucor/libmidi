@@ -26,6 +26,27 @@ int midi_note_unmarshal(midi_note_t* ctx, const midi_cmd_t cmd, const uint8_t* d
     return iterator;
 }
 
+int midi_note_marshal(const midi_note_t* ctx, uint8_t* data, const uint32_t size)
+{
+    static const int k_note_size = 3;
+    if (!ctx || size < k_note_size)
+    {
+        return -1;
+    }
+
+    midi_cmd_t cmd = {};
+
+    cmd.new_msg = true;
+    cmd.status = ctx->on;
+    cmd.channel = ctx->channel;
+
+    data[0] = cmd.raw;
+    data[1] = ctx->pitch;
+    data[2] = ctx->velocity;
+
+    return 0;
+}
+
 float midi_note_freq(midi_note_t* ctx)
 {
     return pitch_to_freq(ctx->pitch);
