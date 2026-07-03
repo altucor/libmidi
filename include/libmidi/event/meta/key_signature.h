@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 
-typedef enum _midi_scale_e : uint8_t
+// typedef enum _midi_scale_e : uint8_t
+typedef enum _midi_scale_e
 {
     MIDI_SCALE_MAJOR,
     MIDI_SCALE_MINOR

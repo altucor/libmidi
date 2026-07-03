@@ -11,7 +11,8 @@
 // LSN - Least significant nibble
 // MSN - Most significant nibble
 
-typedef enum _mtc_piece_e : uint8_t
+// typedef enum _mtc_piece_e : uint8_t
+typedef enum _mtc_piece_e
 {
     MTC_PIECE_FRAMES_LSN = 0,
     MTC_PIECE_FRAMES_MSN,

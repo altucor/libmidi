@@ -13,11 +13,15 @@ typedef enum mthd_format
     MTHD_FORMAT_COUNT
 } mthd_format_e;
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
 #pragma pack(push, 1)
+typedef struct _mthd_t
+
+#else
+
+typedef struct __attribute__((packed)) _mthd_t
 #endif
 
-typedef struct __attribute__((packed)) _mthd
 {
     char mthd[MTHD_MARKER_SIZE];
     uint32_t length;
@@ -26,7 +30,7 @@ typedef struct __attribute__((packed)) _mthd
     uint16_t ppqn;
 } mthd_t;
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
 #pragma pack(pop)
 #endif
 

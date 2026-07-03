@@ -91,7 +91,8 @@ const static float kNotesFreq[] = {
     5919.91f, 6271.93f, 6644.88f, 7040.0f,  7458.62f, 7902.13f /* #9 */
 };
 
-typedef enum _midi_status : uint8_t
+// typedef enum _midi_status : uint8_t
+typedef enum _midi_status
 {
     MIDI_STATUS_NOTE_OFF = 0x00,
     MIDI_STATUS_NOTE_ON,
@@ -104,7 +105,8 @@ typedef enum _midi_status : uint8_t
     MIDI_STATUS_COUNT
 } midi_status_e;
 
-typedef enum _midi_status_system : uint8_t
+// typedef enum _midi_status_system : uint8_t
+typedef enum _midi_status_system
 {
     MIDI_STATUS_SYSTEM_COMMON_SYSEX_START = 0x00,
     MIDI_STATUS_SYSTEM_COMMON_MTC_QUARTER_FRAME,
@@ -135,7 +137,8 @@ typedef enum _midi_status_system : uint8_t
 } midi_status_system_e;
 
 // Meta events: https://www.mixagesoftware.com/en/midikit/help/HTML/meta_events.html
-typedef enum _midi_meta_event : uint8_t
+// typedef enum _midi_meta_event : uint8_t
+typedef enum _midi_meta_event
 {
     MIDI_META_EVENT_SEQUENCE_NUMBER = 0x00,
     MIDI_META_EVENT_TEXT = 0x01,

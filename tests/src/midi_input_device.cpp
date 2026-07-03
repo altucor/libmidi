@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <stack>
 #include <utility>
+#include <algorithm>
 
 static bool s_should_check = false;
 static midi_cmd_t s_msg = {.raw = 0x00};

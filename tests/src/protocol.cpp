@@ -83,7 +83,7 @@ TEST(protocol, midi_cmd)
 
 TEST(protocol, midi_cmd_FF)
 {
-    midi_cmd_t cmd;
+    midi_cmd_t cmd = {};
     cmd.raw = 0xFF;
 
     EXPECT_TRUE(cmd.new_msg);

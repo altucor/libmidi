@@ -1,4 +1,4 @@
-#include "util.h"
+#include "libmidi/util.h"
 
 #include "libmidi/protocol.h"
 

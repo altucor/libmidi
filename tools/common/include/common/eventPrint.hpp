@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <string>
+#include <array>
 
 void midiHandleSystemMetaEvent(const midi_event_t* event)
 {
