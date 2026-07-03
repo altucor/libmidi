@@ -15,8 +15,6 @@ target_sources(${PROJECT_NAME}
     src/main.cpp
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -framework CoreMIDI -framework CoreAudio -framework AudioToolbox -framework CoreFoundation")
-
 target_link_libraries(${PROJECT_NAME} PRIVATE midi)
 target_link_libraries(${PROJECT_NAME} PRIVATE common)
 
