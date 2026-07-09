@@ -32,9 +32,11 @@ TEST(protocol, protocol_check)
     EXPECT_EQ(sizeof(kNotesStr) / sizeof(char*), MIDI_TOTAL_MAPPED_OCTAVES * MIDI_NOTES_IN_OCTAVE);
     EXPECT_EQ(sizeof(kNotesFreq) / sizeof(float), MIDI_TOTAL_MAPPED_OCTAVES * MIDI_NOTES_IN_OCTAVE);
 
+#if !defined(OS_WINDOWS)
     EXPECT_EQ(sizeof(midi_status_e), 1);
     EXPECT_EQ(sizeof(midi_status_system_e), 1);
     EXPECT_EQ(sizeof(midi_meta_event_e), 1);
+#endif
     EXPECT_EQ(sizeof(midi_cmd_t), 1);
 }
 

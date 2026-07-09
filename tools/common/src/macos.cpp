@@ -68,7 +68,7 @@ namespace midi
             }
 
             auto ctx = reinterpret_cast<PortInput::Impl*>(obj);
-            if (!ctx->m_midiCb || !ctx->m_midiCtx)
+            if (!ctx || !ctx->m_midiCb || !ctx->m_midiCtx)
             {
                 return;
             }

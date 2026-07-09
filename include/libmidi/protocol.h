@@ -91,8 +91,21 @@ const static float kNotesFreq[] = {
     5919.91f, 6271.93f, 6644.88f, 7040.0f,  7458.62f, 7902.13f /* #9 */
 };
 
-// typedef enum _midi_status : uint8_t
+/*
+ *
+ * OS specific ifdefs are here to deal with C23 support on MSVC
+ * MSVC compiller doesn't support C23 extension which allows to specify enum type
+ * https://ettolrach.com/blog/c_enum_msvc.html
+ * https://en.cppreference.com/c/compiler_support/23
+ * https://open-std.org/JTC1/SC22/WG14/www/docs/n3030.htm
+ *
+ */
+
+#if defined(OS_WINDOWS)
 typedef enum _midi_status
+#elif
+typedef enum _midi_status : uint8_t
+#endif
 {
     MIDI_STATUS_NOTE_OFF = 0x00,
     MIDI_STATUS_NOTE_ON,
@@ -105,8 +118,11 @@ typedef enum _midi_status
     MIDI_STATUS_COUNT
 } midi_status_e;
 
-// typedef enum _midi_status_system : uint8_t
+#if defined(OS_WINDOWS)
 typedef enum _midi_status_system
+#elif
+typedef enum _midi_status_system : uint8_t
+#endif
 {
     MIDI_STATUS_SYSTEM_COMMON_SYSEX_START = 0x00,
     MIDI_STATUS_SYSTEM_COMMON_MTC_QUARTER_FRAME,
@@ -137,8 +153,12 @@ typedef enum _midi_status_system
 } midi_status_system_e;
 
 // Meta events: https://www.mixagesoftware.com/en/midikit/help/HTML/meta_events.html
-// typedef enum _midi_meta_event : uint8_t
+
+#if defined(OS_WINDOWS)
 typedef enum _midi_meta_event
+#elif
+typedef enum _midi_meta_event : uint8_t
+#endif
 {
     MIDI_META_EVENT_SEQUENCE_NUMBER = 0x00,
     MIDI_META_EVENT_TEXT = 0x01,
@@ -166,8 +186,13 @@ typedef union _midi_cmd
     uint8_t raw;
     struct
     {
+#if defined(OS_WINDOWS)
+        uint8_t system : 4;
+        uint8_t status : 3;
+#elif
         midi_status_system_e system : 4;
         midi_status_e status : 3;
+#endif
         bool new_msg : 1;
     };
     struct
@@ -176,5 +201,13 @@ typedef union _midi_cmd
         uint8_t ____pad : 4;
     };
 } midi_cmd_t;
+
+#if !defined(OS_WINDOWS)
+static_assert(sizeof(midi_status_e) == 1, "MIDI: midi_status_e Invalid bit alignment");
+static_assert(sizeof(midi_status_system_e) == 1, "MIDI: midi_status_system_e Invalid bit alignment");
+static_assert(sizeof(midi_meta_event_e) == 1, "MIDI: midi_meta_event_e Invalid bit alignment");
+#endif
+
+static_assert(sizeof(midi_cmd_t) == 1, "MIDI: midi_cmd_t Invalid bit alignment");
 
 #endif // MIDI_PROTOCOL_H
