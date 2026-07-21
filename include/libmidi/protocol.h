@@ -103,7 +103,7 @@ const static float kNotesFreq[] = {
 
 #if defined(OS_WINDOWS)
 typedef enum _midi_status
-#elif
+#else
 typedef enum _midi_status : uint8_t
 #endif
 {
@@ -120,7 +120,7 @@ typedef enum _midi_status : uint8_t
 
 #if defined(OS_WINDOWS)
 typedef enum _midi_status_system
-#elif
+#else
 typedef enum _midi_status_system : uint8_t
 #endif
 {
@@ -156,7 +156,7 @@ typedef enum _midi_status_system : uint8_t
 
 #if defined(OS_WINDOWS)
 typedef enum _midi_meta_event
-#elif
+#else
 typedef enum _midi_meta_event : uint8_t
 #endif
 {
@@ -189,7 +189,7 @@ typedef union _midi_cmd
 #if defined(OS_WINDOWS)
         uint8_t system : 4;
         uint8_t status : 3;
-#elif
+#else
         midi_status_system_e system : 4;
         midi_status_e status : 3;
 #endif

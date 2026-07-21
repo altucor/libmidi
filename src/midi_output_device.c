@@ -39,8 +39,9 @@ int midi_output_device_send(midi_output_device_t* ctx, const midi_event_t* event
         ret = vlv_encode(&ctx->vlv, data + iterator, size - iterator);
         if (ret < 0)
         {
-            //
+            return ret;
         }
+        iterator += ret;
     }
 
     switch (event->message.status)
@@ -48,12 +49,18 @@ int midi_output_device_send(midi_output_device_t* ctx, const midi_event_t* event
         case MIDI_STATUS_NOTE_OFF:
         case MIDI_STATUS_NOTE_ON:
         {
-            midi_note_marshal(&event->standard.note, data, size);
+            ret = midi_note_marshal(&event->standard.note, data + iterator, size - iterator);
+            if (ret < 0)
+            {
+                return ret;
+            }
+
+            iterator += ret;
             break;
         }
 
         default: break;
     }
 
-    return 0;
+    return iterator;
 }

@@ -44,7 +44,7 @@ int midi_note_marshal(const midi_note_t* ctx, uint8_t* data, const uint32_t size
     data[1] = ctx->pitch;
     data[2] = ctx->velocity;
 
-    return 0;
+    return k_note_size;
 }
 
 float midi_note_freq(midi_note_t* ctx)
