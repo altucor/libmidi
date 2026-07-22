@@ -19,6 +19,7 @@ int midi_program_change_unmarshal(
     const midi_cmd_t cmd,
     const uint8_t* data,
     const uint32_t size);
+int midi_program_change_marshal(const midi_program_change_t* ctx, uint8_t* data, const uint32_t size);
 
 #ifdef __cplusplus
 }

@@ -21,6 +21,8 @@ int midi_key_pressure_unmarshal(
     const uint8_t* data,
     const uint32_t size);
 
+int midi_key_pressure_marshal(const midi_key_pressure_t* ctx, uint8_t* data, const uint32_t size);
+
 #ifdef __cplusplus
 }
 #endif

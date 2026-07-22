@@ -24,3 +24,24 @@ int midi_control_unmarshal(midi_control_t* ctx, const midi_cmd_t cmd, const uint
 
     return iterator;
 }
+
+int midi_control_marshal(const midi_control_t* ctx, uint8_t* data, const uint32_t size)
+{
+    static const int k_control_size = 3;
+    if (!ctx || size < k_control_size)
+    {
+        return -1;
+    }
+
+    midi_cmd_t cmd = {};
+
+    cmd.new_msg = true;
+    cmd.status = MIDI_STATUS_CONTROLLER_CHANGE;
+    cmd.channel = ctx->channel;
+
+    data[0] = cmd.raw;
+    data[1] = ctx->control;
+    data[2] = ctx->value;
+
+    return k_control_size;
+}

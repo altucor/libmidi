@@ -19,6 +19,7 @@ extern "C"
 
 void midi_control_reset(midi_control_t* ctx);
 int midi_control_unmarshal(midi_control_t* ctx, const midi_cmd_t cmd, const uint8_t* data, const uint32_t size);
+int midi_control_marshal(const midi_control_t* ctx, uint8_t* data, const uint32_t size);
 
 #ifdef __cplusplus
 }

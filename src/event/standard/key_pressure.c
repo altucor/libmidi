@@ -1,4 +1,5 @@
 #include "libmidi/event/standard/key_pressure.h"
+#include "libmidi/protocol.h"
 
 int midi_key_pressure_unmarshal(
     midi_key_pressure_t* ctx,
@@ -18,4 +19,26 @@ int midi_key_pressure_unmarshal(
     MIDI_DECODE_OR_FAIL(ctx->pressure, data, iterator, size)
 
     return iterator;
+}
+
+int midi_key_pressure_marshal(const midi_key_pressure_t* ctx, uint8_t* data, const uint32_t size)
+{
+    static const int k_pressure_size = 3;
+
+    if (!ctx || size < k_pressure_size)
+    {
+        return -1;
+    }
+
+    midi_cmd_t cmd = {};
+
+    cmd.new_msg = true;
+    cmd.status = MIDI_STATUS_KEY_PRESSURE;
+    cmd.channel = ctx->channel;
+
+    data[0] = cmd.raw;
+    data[1] = ctx->pitch;
+    data[2] = ctx->pressure;
+
+    return k_pressure_size;
 }
