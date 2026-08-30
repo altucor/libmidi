@@ -304,7 +304,7 @@ void unmarshal_message_status(midi_input_device_t* ctx)
 
         case MIDI_STATUS_CONTROLLER_CHANGE:
         {
-            const int ret = midi_control_unmarshal(
+            ret = midi_control_unmarshal(
                 &ctx->event.standard.control, ctx->event.message, ctx->buffer.data, ctx->buffer.expected_size);
 
             break;
@@ -312,7 +312,7 @@ void unmarshal_message_status(midi_input_device_t* ctx)
 
         case MIDI_STATUS_PROGRAM_CHANGE:
         {
-            const int ret = midi_program_change_unmarshal(
+            ret = midi_program_change_unmarshal(
                 &ctx->event.standard.program_change, ctx->event.message, ctx->buffer.data, ctx->buffer.expected_size);
 
             break;
@@ -320,7 +320,7 @@ void unmarshal_message_status(midi_input_device_t* ctx)
 
         case MIDI_STATUS_CHANNEL_PRESSURE:
         {
-            const int ret = midi_channel_pressure_unmarshal(
+            ret = midi_channel_pressure_unmarshal(
                 &ctx->event.standard.channel_pressure, ctx->event.message, ctx->buffer.data, ctx->buffer.expected_size);
 
             break;
@@ -328,7 +328,7 @@ void unmarshal_message_status(midi_input_device_t* ctx)
 
         case MIDI_STATUS_PITCH_BEND:
         {
-            const int ret = midi_pitch_unmarshal(
+            ret = midi_pitch_unmarshal(
                 &ctx->event.standard.pitch, ctx->event.message, ctx->buffer.data, ctx->buffer.expected_size);
 
             break;

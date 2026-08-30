@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <stdio.h>
+#include <assert.h>
 
 #define MIDI_BAUD_RATE_DEFAULT (31250)
 
@@ -50,12 +50,12 @@
 #define MTHD_MARKER_SIZE (4)
 #define MTRK_MARKER_SIZE (4)
 
-const static char* k_mthd_header_reference = "MThd";
-const static char* k_mtrk_header_reference = "MTrk";
+static const char k_mthd_header_reference[] = "MThd";
+static const char k_mtrk_header_reference[] = "MTrk";
 
 #define MIDI_TOTAL_MAPPED_OCTAVES (10)
 
-const static char* kNotesStr[] = {
+static const char* k_notes_str[] __attribute__((unused)) = {
     "C0", "C#0", "D0", "Eb0", "E0", "F0", "F#0", "G0", "G#0", "A0", "Bb0", "B0", /* #0 */
     "C1", "C#1", "D1", "Eb1", "E1", "F1", "F#1", "G1", "G#1", "A1", "Bb1", "B1", /* #1 */
     "C2", "C#2", "D2", "Eb2", "E2", "F2", "F#2", "G2", "G#2", "A2", "Bb2", "B2", /* #2 */
@@ -68,7 +68,7 @@ const static char* kNotesStr[] = {
     "C9", "C#9", "D9", "Eb9", "E9", "F9", "F#9", "G9", "G#9", "A9", "Bb9", "B9"  /* #9 */
 };
 
-const static float kNotesFreq[] = {
+static const float k_notes_freq[] = {
     8.18f,    8.66f,    9.18f,    9.72f,    10.30f,   10.91f,
     11.56f,   12.25f,   12.98f,   13.75f,   14.57f,   15.43f, /* #0 */
     16.35f,   17.32f,   18.35f,   19.45f,   20.60f,   21.83f,
@@ -186,7 +186,7 @@ typedef union _midi_cmd
     uint8_t raw;
     struct
     {
-#if defined(OS_WINDOWS)
+#if defined(OS_WINDOWS) || defined(OS_NONE_STM32)
         uint8_t system : 4;
         uint8_t status : 3;
 #else

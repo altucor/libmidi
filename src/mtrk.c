@@ -108,7 +108,6 @@ int mtrk_unmarshal(mtrk_t* ctx, const uint8_t* data, const uint32_t size)
         return MIDI_ERROR_NOT_ENOUGH_DATA;
     }
 
-    int res = 0;
     uint32_t iterator = 0;
 
     (*(uint32_t*)&ctx->mtrk) = readu32(data, &iterator);
@@ -137,6 +136,11 @@ int mtrk_unmarshal(mtrk_t* ctx, const uint8_t* data, const uint32_t size)
         }
 
         midi_input_device_feed(ctx->device, data[iterator]);
+        if (ctx->error)
+        {
+            return ctx->error;
+        }
+
         iterator++;
     }
 

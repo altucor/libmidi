@@ -29,8 +29,8 @@ TEST(protocol, protocol_check)
     EXPECT_STREQ(k_mthd_header_reference, "MThd");
     EXPECT_STREQ(k_mtrk_header_reference, "MTrk");
 
-    EXPECT_EQ(sizeof(kNotesStr) / sizeof(char*), MIDI_TOTAL_MAPPED_OCTAVES * MIDI_NOTES_IN_OCTAVE);
-    EXPECT_EQ(sizeof(kNotesFreq) / sizeof(float), MIDI_TOTAL_MAPPED_OCTAVES * MIDI_NOTES_IN_OCTAVE);
+    EXPECT_EQ(sizeof(k_notes_str) / sizeof(char*), MIDI_TOTAL_MAPPED_OCTAVES * MIDI_NOTES_IN_OCTAVE);
+    EXPECT_EQ(sizeof(k_notes_freq) / sizeof(float), MIDI_TOTAL_MAPPED_OCTAVES * MIDI_NOTES_IN_OCTAVE);
 
 #if !defined(OS_WINDOWS)
     EXPECT_EQ(sizeof(midi_status_e), 1);

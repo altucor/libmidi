@@ -63,12 +63,12 @@ float duration_to_ms(const uint32_t vlv_value, const float pulsesPerSecond)
 
 float pitch_to_freq(const uint8_t pitch)
 {
-    return kNotesFreq[pitch];
+    return k_notes_freq[pitch];
 }
 
 const char* pitch_to_name(const uint8_t pitch)
 {
-    return kNotesStr[pitch];
+    return k_notes_str[pitch];
 }
 
 bool is_meta_text_event(const uint8_t message_meta)

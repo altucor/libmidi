@@ -11,7 +11,7 @@ void midi_note_reset(midi_note_t* ctx)
 
 int midi_note_unmarshal(midi_note_t* ctx, const midi_cmd_t cmd, const uint8_t* data, const uint32_t size)
 {
-    if (cmd.status != MIDI_STATUS_NOTE_ON & cmd.status != MIDI_STATUS_NOTE_OFF)
+    if (cmd.status != MIDI_STATUS_NOTE_ON && cmd.status != MIDI_STATUS_NOTE_OFF)
     {
         return MIDI_ERROR_STATUS_INVALID;
     }
