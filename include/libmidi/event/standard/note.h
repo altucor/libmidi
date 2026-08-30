@@ -1,0 +1,32 @@
+#ifndef MIDI_EVENT_STANDARD_NOTE_H
+#define MIDI_EVENT_STANDARD_NOTE_H
+
+#include "libmidi/protocol.h"
+
+#include <stdbool.h>
+#include <stdint.h>
+
+typedef struct _midi_note
+{
+    bool on;
+    uint8_t channel;
+    uint8_t pitch;
+    uint8_t velocity;
+} midi_note_t;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+void midi_note_reset(midi_note_t* ctx);
+int midi_note_unmarshal(midi_note_t* ctx, const midi_cmd_t cmd, const uint8_t* data, const uint32_t size);
+float midi_note_freq(midi_note_t* ctx);
+const char* midi_note_name(midi_note_t* ctx);
+int midi_note_marshal(const midi_note_t* ctx, uint8_t* data, const uint32_t size);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // MIDI_EVENT_STANDARD_NOTE_H

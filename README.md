@@ -135,9 +135,18 @@ int main(int argc, char *argv[])
 ```
 
 ## Building
+
+### Release
 ```
 mkdir build && cd build
 cmake ../ -DCMAKE_BUILD_TYPE=Release
+cmake --build . -j4
+```
+
+### Debug / Development
+```
+mkdir build && cd build
+cmake ../ -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTING=ON -DENABLE_CODE_COVERAGE=ON -DENABLE_TOOLS_BUILD=ON
 cmake --build . -j4
 ```
 

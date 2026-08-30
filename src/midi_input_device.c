@@ -2,320 +2,693 @@
 
 #include <stdlib.h>
 
-void handle_ready_to_new(midi_input_device_t *ctx, const uint8_t b);
-void handle_predelay(midi_input_device_t *ctx, const uint8_t b);
-void handle_new_message(midi_input_device_t *ctx, const uint8_t b);
-void handle_read_payload(midi_input_device_t *ctx, const uint8_t b);
-void handle_system_meta_event(midi_input_device_t *ctx, const uint8_t b);
-void handle_system_meta_event_payload_size(midi_input_device_t *ctx, const uint8_t b);
+void handle_ready_to_new(midi_input_device_t* ctx, const uint8_t b);
+void handle_predelay(midi_input_device_t* ctx, const uint8_t b);
+void handle_new_message(midi_input_device_t* ctx, const uint8_t b);
+void handle_read_payload(midi_input_device_t* ctx, const uint8_t b);
+void handle_system_meta_event(midi_input_device_t* ctx, const uint8_t b);
+void handle_system_meta_event_payload_size(midi_input_device_t* ctx, const uint8_t b);
+void handle_sysex_payload_size(midi_input_device_t* ctx, const uint8_t b);
+void handle_sysex_payload_live(midi_input_device_t* ctx, const uint8_t b);
 
-void init_handlers(midi_input_device_t *ctx)
+void init_handlers(midi_input_device_t* ctx)
 {
-    ctx->handlers.arr[MIDI_INPUT_STATE_READY_TO_NEW] = (midi_cb_state_handler_f *)&handle_ready_to_new;
-    ctx->handlers.arr[MIDI_INPUT_STATE_PREDELAY] = (midi_cb_state_handler_f *)&handle_predelay;
-    ctx->handlers.arr[MIDI_INPUT_STATE_NEW_MESSAGE] = (midi_cb_state_handler_f *)&handle_new_message;
-    ctx->handlers.arr[MIDI_INPUT_STATE_READ_PAYLOAD] = (midi_cb_state_handler_f *)&handle_read_payload;
-    ctx->handlers.arr[MIDI_INPUT_STATE_SYSTEM_META] = (midi_cb_state_handler_f *)&handle_system_meta_event;
-    ctx->handlers.arr[MIDI_INPUT_STATE_READ_META_PAYLOAD_SIZE] = (midi_cb_state_handler_f *)&handle_system_meta_event_payload_size;
+    ctx->handlers.arr[MIDI_INPUT_STATE_READY_TO_NEW] = (midi_cb_input_state_handler_f*)&handle_ready_to_new;
+    ctx->handlers.arr[MIDI_INPUT_STATE_PREDELAY] = (midi_cb_input_state_handler_f*)&handle_predelay;
+    ctx->handlers.arr[MIDI_INPUT_STATE_NEW_MESSAGE] = (midi_cb_input_state_handler_f*)&handle_new_message;
+    ctx->handlers.arr[MIDI_INPUT_STATE_READ_PAYLOAD] = (midi_cb_input_state_handler_f*)&handle_read_payload;
+    ctx->handlers.arr[MIDI_INPUT_STATE_SYSTEM_META] = (midi_cb_input_state_handler_f*)&handle_system_meta_event;
+    ctx->handlers.arr[MIDI_INPUT_STATE_READ_META_PAYLOAD_SIZE] =
+        (midi_cb_input_state_handler_f*)&handle_system_meta_event_payload_size;
+    ctx->handlers.arr[MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_SIZE] =
+        (midi_cb_input_state_handler_f*)&handle_sysex_payload_size;
+    ctx->handlers.arr[MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_LIVE] =
+        (midi_cb_input_state_handler_f*)&handle_sysex_payload_live;
 }
 
-void midi_input_device_reset(midi_input_device_t *ctx)
+void unmarshal_message_status_system_meta(midi_input_device_t* ctx)
 {
+    if (!ctx)
+    {
+        return;
+    }
+
+    int ret = MIDI_ERROR_OK;
+
+    switch (ctx->event.message_meta)
+    {
+        case MIDI_META_EVENT_SEQUENCE_NUMBER:
+        {
+            ret = midi_sequence_number_unmarshal(
+                &ctx->event.meta.sequence_number, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_META_EVENT_TEXT:
+        case MIDI_META_EVENT_COPYRIGHT:
+        case MIDI_META_EVENT_TRACK_NAME:
+        case MIDI_META_EVENT_INSTRUMENT_NAME:
+        case MIDI_META_EVENT_LYRIC_TEXT:
+        case MIDI_META_EVENT_TEXT_MARKER:
+        case MIDI_META_EVENT_CUE_POINT:
+        case MIDI_META_EVENT_PROGRAM_PATCH_NAME:
+        case MIDI_META_EVENT_DEVICE_PORT_NAME:
+        {
+            ret = midi_text_event_unmarshal(&ctx->event.meta.text, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_META_EVENT_MIDI_CHANNEL_PREFIX:
+        {
+            break;
+        }
+
+        case MIDI_META_EVENT_MIDI_PORT:
+        {
+            break;
+        }
+
+        case MIDI_META_EVENT_TRACK_END:
+        {
+            // no size, just read zero byte at the end
+            break;
+        }
+
+        case MIDI_META_EVENT_M_LIVE_TAG:
+        {
+            ret = midi_m_live_tag_unmarshal(&ctx->event.meta.m_live_tag, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_META_EVENT_TEMPO:
+        {
+            ret = midi_tempo_unmarshal(&ctx->event.meta.tempo, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_META_EVENT_SMPTE_OFFSET:
+        {
+            ret =
+                midi_smpte_offset_unmarshal(&ctx->event.meta.smpte_offset, ctx->buffer.data, ctx->buffer.expected_size);
+            break;
+        }
+
+        case MIDI_META_EVENT_TIME_SIGNATURE:
+        {
+            ret = midi_time_signature_unmarshal(
+                &ctx->event.meta.time_signature, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_META_EVENT_KEY_SIGNATURE:
+        {
+            ret = midi_key_signature_unmarshal(
+                &ctx->event.meta.key_signature, ctx->buffer.data, ctx->buffer.expected_size);
+            break;
+        }
+
+        case MIDI_META_EVENT_PROPRIETARY_EVENT:
+        {
+            ret = midi_proprietary_unmarshal(&ctx->event.meta.proprietary, ctx->buffer.data, ctx->buffer.expected_size);
+            break;
+        }
+
+        // return to avoid notifying ctx->listener->event
+        default: return;
+    }
+
+    if (!ctx->listener)
+    {
+        return;
+    }
+
+    if (MIDI_SUCCESS(ret))
+    {
+        if (ctx->listener->event)
+        {
+            ctx->listener->event(ctx->listener->handle, &ctx->event);
+        }
+    }
+    else
+    {
+        if (ctx->listener->error)
+        {
+            ctx->listener->error(ctx->listener->handle, ret);
+        }
+    }
+}
+
+void unmarshal_message_status_system(midi_input_device_t* ctx)
+{
+    if (!ctx)
+    {
+        return;
+    }
+
+    // TODO: Do check here is SMF or not to handle realtime events or common
+
+    int ret = MIDI_ERROR_OK;
+
+    switch (ctx->event.message.system)
+    {
+        case MIDI_STATUS_SYSTEM_COMMON_SYSEX_START:
+        {
+            // System Exclusive (data dump) 2nd byte= Vendor ID followed by more data bytes and ending with EOX (0xF7).
+
+            ret = midi_sysex_unmarshal(&ctx->event.system.sysex, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_MTC_QUARTER_FRAME:
+        {
+            ret = midi_mtc_quarter_frame_unmarshal(
+                &ctx->event.system.mtc_quarter_frame, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_SONG_POSITION:
+        {
+            ret = midi_song_position_unmarshal(
+                &ctx->event.system.song_position, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_SONG_SELECT:
+        {
+            ret =
+                midi_song_select_unmarshal(&ctx->event.system.song_select, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_RESERVED_4:
+        case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_9:
+        case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_13:
+        {
+            if (ctx->listener && ctx->listener->error)
+            {
+                ctx->listener->error(ctx->listener->handle, MIDI_ERROR_UNEXPECTED_SYSTEM_RESERVED);
+            }
+
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_UNOFFICIAL_BUS_SELECT:
+        case MIDI_STATUS_SYSTEM_COMMON_TUNE_REQUEST:
+        case MIDI_STATUS_SYSTEM_REALTIME_TIMING_TICK:
+        case MIDI_STATUS_SYSTEM_REALTIME_SONG_START:
+        case MIDI_STATUS_SYSTEM_REALTIME_SONG_CONTINUE:
+        case MIDI_STATUS_SYSTEM_REALTIME_SONG_STOP:
+        case MIDI_STATUS_SYSTEM_REALTIME_ACTIVE_SENSING:
+        {
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_SYSEX_END:
+        {
+            if (ctx->smf)
+            {
+                // Should be not seen
+            }
+            else
+            {
+                ret = midi_sysex_unmarshal(&ctx->event.system.sysex, ctx->buffer.data, ctx->buffer.iterator_write);
+
+                ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
+                vlv_reset(&ctx->vlv);
+                buffer_reset(&ctx->buffer);
+            }
+
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_REALTIME_RESET:
+        {
+            if (ctx->smf)
+            {
+                unmarshal_message_status_system_meta(ctx);
+                // return to avoid early notification
+                return;
+            }
+            else
+            {
+                // Realtime reset
+            }
+
+            break;
+        }
+
+        default:
+        {
+            ret = MIDI_ERROR_UNEXPECTED_SYSTEM_RESERVED;
+            break;
+        }
+    }
+
+    if (!ctx->listener)
+    {
+        return;
+    }
+
+    if (MIDI_SUCCESS(ret))
+    {
+        if (ctx->listener->event)
+        {
+            ctx->listener->event(ctx->listener->handle, &ctx->event);
+        }
+    }
+    else
+    {
+        if (ctx->listener->error)
+        {
+            ctx->listener->error(ctx->listener->handle, ret);
+        }
+    }
+}
+
+void unmarshal_message_status(midi_input_device_t* ctx)
+{
+    if (!ctx)
+    {
+        return;
+    }
+
+    int ret = MIDI_ERROR_OK;
+
+    switch (ctx->event.message.status)
+    {
+        case MIDI_STATUS_NOTE_OFF:
+        case MIDI_STATUS_NOTE_ON:
+        {
+            ret = midi_note_unmarshal(
+                &ctx->event.standard.note, ctx->event.message, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_STATUS_KEY_PRESSURE:
+        {
+            ret = midi_key_pressure_unmarshal(
+                &ctx->event.standard.key_pressure, ctx->event.message, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_STATUS_CONTROLLER_CHANGE:
+        {
+            ret = midi_control_unmarshal(
+                &ctx->event.standard.control, ctx->event.message, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_STATUS_PROGRAM_CHANGE:
+        {
+            ret = midi_program_change_unmarshal(
+                &ctx->event.standard.program_change, ctx->event.message, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_STATUS_CHANNEL_PRESSURE:
+        {
+            ret = midi_channel_pressure_unmarshal(
+                &ctx->event.standard.channel_pressure, ctx->event.message, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_STATUS_PITCH_BEND:
+        {
+            ret = midi_pitch_unmarshal(
+                &ctx->event.standard.pitch, ctx->event.message, ctx->buffer.data, ctx->buffer.expected_size);
+
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM:
+        {
+            unmarshal_message_status_system(ctx);
+            // return to avoid notifying ctx->listener->event
+            return;
+        }
+
+        default:
+        {
+            ret = MIDI_ERROR_UNEXPECTED_STATUS;
+            break;
+        }
+    }
+
+    if (!ctx->listener)
+    {
+        return;
+    }
+
+    if (MIDI_SUCCESS(ret))
+    {
+        if (ctx->listener->event)
+        {
+            ctx->listener->event(ctx->listener->handle, &ctx->event);
+        }
+    }
+    else
+    {
+        if (ctx->listener->error)
+        {
+            ctx->listener->error(ctx->listener->handle, ret);
+        }
+    }
+}
+
+void handle_system_meta_event_payload_size(midi_input_device_t* ctx, const uint8_t b)
+{
+    if (!ctx)
+    {
+        return;
+    }
+
+    if (!vlv_feed(&ctx->vlv, b))
+    {
+        return;
+    }
+
+    // if vlv full switch to filling buffer with midi bytes
+    ctx->state_data.meta_length = vlv_get_value(&ctx->vlv);
+    if (ctx->state_data.meta_length != 0)
+    {
+        buffer_set_expected_size(&ctx->buffer, ctx->state_data.meta_length);
+        ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
+        return;
+    }
+
+    unmarshal_message_status(ctx);
     ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
-    midi_event_smf_reset(&ctx->event_smf);
-    buffer_reset(&ctx->buffer);
-    vlv_reset(&ctx->vlv);
 }
 
-midi_input_device_t *midi_input_device_new(bool smf)
+void handle_system_meta_event(midi_input_device_t* ctx, const uint8_t b)
 {
-    midi_input_device_t *ctx = calloc(1, sizeof(midi_input_device_t));
-    init_handlers(ctx);
-    midi_input_device_reset(ctx);
-    ctx->smf = smf;
-    return ctx;
-}
-
-void midi_input_device_free(midi_input_device_t *ctx)
-{
-    if (ctx == NULL)
+    if (!ctx)
     {
         return;
     }
-    free(ctx);
-}
 
-void midi_input_device_set_listener(midi_input_device_t *ctx, midi_device_callback_data_t *listener)
-{
-    ctx->listener = listener;
-}
+    ctx->event.message_meta = b;
 
-uint32_t midi_input_device_get_predelay(midi_input_device_t *ctx)
-{
-    return ctx->event_smf.predelay;
-}
-
-void notify_watchers_system(midi_input_device_t *ctx)
-{
-    switch (ctx->event_smf.message_meta)
+    switch (ctx->event.message_meta)
     {
-    case MIDI_META_EVENT_SEQUENCE_NUMBER:
-        break;
-    case MIDI_META_EVENT_TEXT:
-    case MIDI_META_EVENT_COPYRIGHT:
-    case MIDI_META_EVENT_TRACK_NAME:
-    case MIDI_META_EVENT_INSTRUMENT_NAME:
-    case MIDI_META_EVENT_LYRIC_TEXT:
-    case MIDI_META_EVENT_TEXT_MARKER:
-    case MIDI_META_EVENT_CUE_POINT:
-    case MIDI_META_EVENT_PROGRAM_PATCH_NAME:
-    case MIDI_META_EVENT_DEVICE_PORT_NAME:
-        midi_text_event_unmarshal(&ctx->event_smf.event.meta.text, ctx->buffer.data, ctx->buffer.expected_size);
-        break;
-    case MIDI_META_EVENT_MIDI_CHANNEL:
-        break;
-    case MIDI_META_EVENT_MIDI_PORT:
-        break;
-    case MIDI_META_EVENT_TRACK_END:
-        // no size, just read zero byte at the end
-        break;
-    case MIDI_META_EVENT_M_LIVE_TAG:
-        break;
-    case MIDI_META_EVENT_TEMPO: {
-        midi_tempo_unmarshal(&ctx->event_smf.event.meta.tempo, ctx->buffer.data, ctx->buffer.expected_size);
-        if (ctx->listener->tempo != NULL)
-        {
-            ctx->listener->tempo(ctx->listener->handle, ctx->event_smf.event.meta.tempo);
-        }
-        break;
-    }
-    case MIDI_META_EVENT_SMPTE_OFFSET:
-        break;
-    case MIDI_META_EVENT_TIME_SIGNATURE:
-        midi_time_signature_unmarshal(&ctx->event_smf.event.meta.time_signature, ctx->buffer.data, ctx->buffer.expected_size);
-        break;
-    case MIDI_META_EVENT_KEY_SIGNATURE:
-        break;
-    case MIDI_META_EVENT_PROPRIETARY_EVENT:
-        break;
-    default:
-        break;
-    }
-    if (ctx->listener->event != NULL)
-    {
-        ctx->listener->event(ctx->listener->handle, ctx->event_smf.message, ctx->event_smf.message_meta, &ctx->event_smf.event);
+        case MIDI_META_EVENT_SEQUENCE_NUMBER:
+        case MIDI_META_EVENT_TEXT:
+        case MIDI_META_EVENT_COPYRIGHT:
+        case MIDI_META_EVENT_TRACK_NAME:
+        case MIDI_META_EVENT_INSTRUMENT_NAME:
+        case MIDI_META_EVENT_LYRIC_TEXT:
+        case MIDI_META_EVENT_TEXT_MARKER:
+        case MIDI_META_EVENT_CUE_POINT:
+        case MIDI_META_EVENT_PROGRAM_PATCH_NAME:
+        case MIDI_META_EVENT_DEVICE_PORT_NAME:
+        case MIDI_META_EVENT_MIDI_CHANNEL_PREFIX:
+        case MIDI_META_EVENT_MIDI_PORT:
+        case MIDI_META_EVENT_TRACK_END:
+        case MIDI_META_EVENT_M_LIVE_TAG:
+        case MIDI_META_EVENT_TEMPO:
+        case MIDI_META_EVENT_SMPTE_OFFSET:
+        case MIDI_META_EVENT_TIME_SIGNATURE:
+        case MIDI_META_EVENT_KEY_SIGNATURE:
+        case MIDI_META_EVENT_PROPRIETARY_EVENT:
+            ctx->state = MIDI_INPUT_STATE_READ_META_PAYLOAD_SIZE;
+            ctx->state_data.meta_length = 0;
+            vlv_reset(&ctx->vlv);
+            buffer_reset(&ctx->buffer);
+            break;
+
+        default: break;
     }
 }
 
-void notify_watchers(midi_input_device_t *ctx)
+void handle_predelay(midi_input_device_t* ctx, const uint8_t b)
 {
-    if (ctx->listener == NULL)
+    if (!ctx)
     {
         return;
     }
-    switch (ctx->event_smf.message.status)
+
+    if (!vlv_feed(&ctx->vlv, b))
     {
-    case MIDI_STATUS_NOTE_OFF:
-    case MIDI_STATUS_NOTE_ON: {
-        midi_note_unmarshal(&ctx->event_smf.event.note, ctx->event_smf.message, ctx->buffer.data, ctx->buffer.expected_size);
-        if (ctx->listener->note != NULL)
-        {
-            ctx->listener->note(ctx->listener->handle, ctx->event_smf.event.note);
-        }
-        break;
+        return;
     }
-    case MIDI_STATUS_KEY_PRESSURE: {
-        midi_key_pressure_unmarshal(&ctx->event_smf.event.key_pressure, ctx->event_smf.message, ctx->buffer.data, ctx->buffer.expected_size);
-        if (ctx->listener->key_pressure != NULL)
-        {
-            ctx->listener->key_pressure(ctx->listener->handle, ctx->event_smf.event.key_pressure);
-        }
-        break;
-    }
-    case MIDI_STATUS_CONTROLLER_CHANGE: {
-        midi_control_unmarshal(&ctx->event_smf.event.control, ctx->event_smf.message, ctx->buffer.data, ctx->buffer.expected_size);
-        if (ctx->listener->control != NULL)
-        {
-            ctx->listener->control(ctx->listener->handle, ctx->event_smf.event.control);
-        }
-        break;
-    }
-    case MIDI_STATUS_PITCH_BEND: {
-        midi_pitch_unmarshal(&ctx->event_smf.event.pitch, ctx->event_smf.message, ctx->buffer.data, ctx->buffer.expected_size);
-        if (ctx->listener->pitch != NULL)
-        {
-            ctx->listener->pitch(ctx->listener->handle, ctx->event_smf.event.pitch);
-        }
-        break;
-    }
-    case MIDI_STATUS_PROGRAM_CHANGE: {
-        midi_program_change_unmarshal(&ctx->event_smf.event.program_change, ctx->event_smf.message, ctx->buffer.data, ctx->buffer.expected_size);
-        if (ctx->listener->program_change != NULL)
-        {
-            ctx->listener->program_change(ctx->listener->handle, ctx->event_smf.event.program_change);
-        }
-        break;
-    }
-    case MIDI_STATUS_CHANNEL_PRESSURE: {
-        midi_channel_pressure_unmarshal(&ctx->event_smf.event.channel_pressure, ctx->event_smf.message, ctx->buffer.data, ctx->buffer.expected_size);
-        if (ctx->listener->channel_pressure != NULL)
-        {
-            ctx->listener->channel_pressure(ctx->listener->handle, ctx->event_smf.event.channel_pressure);
-        }
-        break;
-    }
-    case MIDI_STATUS_SYSTEM: {
-        notify_watchers_system(ctx);
-        return; // return to avoid notifying ctx->listener->event
-    }
-    }
-    if (ctx->listener->event != NULL)
+
+    ctx->event.predelay = vlv_get_value(&ctx->vlv);
+    ctx->state = MIDI_INPUT_STATE_NEW_MESSAGE;
+}
+
+void handle_sysex_payload_size(midi_input_device_t* ctx, const uint8_t b)
+{
+    if (!ctx)
     {
-        ctx->listener->event(ctx->listener->handle, ctx->event_smf.message, ctx->event_smf.message_meta, &ctx->event_smf.event);
+        return;
+    }
+
+    if (!vlv_feed(&ctx->vlv, b))
+    {
+        return;
+    }
+
+    // if vlv full switch to filling buffer with midi bytes
+    ctx->state_data.sysex_length = vlv_get_value(&ctx->vlv);
+    if (ctx->state_data.sysex_length != 0)
+    {
+        buffer_set_expected_size(&ctx->buffer, ctx->state_data.sysex_length);
+        ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
+        return;
+    }
+
+    unmarshal_message_status(ctx);
+    ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
+}
+
+void handle_sysex_payload_live(midi_input_device_t* ctx, const uint8_t b)
+{
+    if (!ctx)
+    {
+        return;
+    }
+
+    buffer_append_u8(&ctx->buffer, b);
+
+    static const midi_cmd_t k_sysex_end = {
+        .new_msg = true, .status = MIDI_STATUS_SYSTEM, .system = MIDI_STATUS_SYSTEM_COMMON_SYSEX_END};
+
+    if (b == k_sysex_end.raw)
+    {
+        ctx->event.message.raw = b;
+
+        unmarshal_message_status(ctx);
+
+        // const int ret = midi_sysex_unmarshal(&ctx->event.system.sysex, ctx->buffer.data, ctx->buffer.expected_size);
+        // if (ret < 0 && ctx->listener && ctx->listener->error)
+        // {
+        //     ctx->listener->error(ctx->listener->handle, ret);
+        // }
+
+        // ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
+        // vlv_reset(&ctx->vlv);
+        // buffer_reset(&ctx->buffer);
     }
 }
 
-void handle_system_meta_event_payload_size(midi_input_device_t *ctx, const uint8_t b)
+void handle_system(midi_input_device_t* ctx, const uint8_t b)
 {
-    if (vlv_feed(&ctx->vlv, b))
+    if (!ctx)
     {
-        // if full switch to filling buffer
-        ctx->event_smf.meta_length = vlv_get_value(&ctx->vlv);
-        if (ctx->event_smf.meta_length != 0)
+        return;
+    }
+
+    switch (ctx->event.message.system)
+    {
+        case MIDI_STATUS_SYSTEM_COMMON_SYSEX_START:
         {
-            buffer_set_expected_size(&ctx->buffer, ctx->event_smf.meta_length);
+            ctx->state_data.sysex_length = 0;
+            vlv_reset(&ctx->vlv);
+            buffer_reset(&ctx->buffer);
+
+            if (ctx->smf)
+            {
+                ctx->state = MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_SIZE;
+            }
+            else
+            {
+                buffer_set_expected_size(&ctx->buffer, BUFFER_SIZE);
+                ctx->state = MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_LIVE;
+            }
+
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_MTC_QUARTER_FRAME:
+        case MIDI_STATUS_SYSTEM_COMMON_SONG_SELECT:
+        {
+            buffer_set_expected_size(&ctx->buffer, 1);
             ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
-            return;
+            break;
         }
-        else
+
+        case MIDI_STATUS_SYSTEM_COMMON_SONG_POSITION:
         {
-            notify_watchers(ctx);
+            buffer_set_expected_size(&ctx->buffer, 2);
+            ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_RESERVED_4:
+        case MIDI_STATUS_SYSTEM_COMMON_SYSEX_END:
+        case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_9:
+        case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_13:
+        {
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_UNOFFICIAL_BUS_SELECT:
+        {
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_TUNE_REQUEST:
+        case MIDI_STATUS_SYSTEM_REALTIME_TIMING_TICK:
+        case MIDI_STATUS_SYSTEM_REALTIME_SONG_START:
+        case MIDI_STATUS_SYSTEM_REALTIME_SONG_CONTINUE:
+        case MIDI_STATUS_SYSTEM_REALTIME_SONG_STOP:
+        case MIDI_STATUS_SYSTEM_REALTIME_ACTIVE_SENSING:
+        {
             ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
-            return;
+            ctx->event.message_meta = 0;
+            ctx->state_data.meta_length = 0;
+            buffer_reset(&ctx->buffer);
+            vlv_reset(&ctx->vlv);
+
+            if (ctx->listener && ctx->listener->event)
+            {
+                ctx->listener->event(ctx->listener->handle, &ctx->event);
+            }
+
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_META:
+        {
+            if (ctx->smf)
+            {
+                ctx->state = MIDI_INPUT_STATE_SYSTEM_META;
+            }
+            else
+            {
+                // do system reset
+            }
+
+            break;
+        }
+
+        default:
+        {
+            break;
         }
     }
 }
 
-void handle_system_meta_event(midi_input_device_t *ctx, const uint8_t b)
+void handle_new_message(midi_input_device_t* ctx, const uint8_t b)
 {
-    ctx->event_smf.message_meta = b;
-    switch (ctx->event_smf.message_meta)
+    if (!ctx)
     {
-    case MIDI_META_EVENT_SEQUENCE_NUMBER:
-    case MIDI_META_EVENT_TEXT:
-    case MIDI_META_EVENT_COPYRIGHT:
-    case MIDI_META_EVENT_TRACK_NAME:
-    case MIDI_META_EVENT_INSTRUMENT_NAME:
-    case MIDI_META_EVENT_LYRIC_TEXT:
-    case MIDI_META_EVENT_TEXT_MARKER:
-    case MIDI_META_EVENT_CUE_POINT:
-    case MIDI_META_EVENT_PROGRAM_PATCH_NAME:
-    case MIDI_META_EVENT_DEVICE_PORT_NAME:
-    case MIDI_META_EVENT_MIDI_CHANNEL:
-    case MIDI_META_EVENT_MIDI_PORT:
-    case MIDI_META_EVENT_TRACK_END:
-    case MIDI_META_EVENT_M_LIVE_TAG:
-    case MIDI_META_EVENT_TEMPO:
-    case MIDI_META_EVENT_SMPTE_OFFSET:
-    case MIDI_META_EVENT_TIME_SIGNATURE:
-    case MIDI_META_EVENT_KEY_SIGNATURE:
-    case MIDI_META_EVENT_PROPRIETARY_EVENT:
-        ctx->state = MIDI_INPUT_STATE_READ_META_PAYLOAD_SIZE;
-        ctx->event_smf.meta_length = 0;
-        vlv_reset(&ctx->vlv);
-        buffer_reset(&ctx->buffer);
-        break;
-    default:
-        break;
+        return;
     }
-}
 
-void handle_system_status(midi_input_device_t *ctx, const uint8_t b)
-{
-    switch (ctx->event_smf.message.system)
-    {
-    case MIDI_STATUS_SYSTEM_EXCLUSIVE:
-        // System Exclusive (data dump) 2nd byte= Vendor ID followed by more data bytes and ending with EOX (0x7F).
-        break;
-    case MIDI_STATUS_SYSTEM_SONG_POSITION:
-        // 2 bytes payload
-        buffer_set_expected_size(&ctx->buffer, 2);
-        ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
-        break;
-    case MIDI_STATUS_SYSTEM_SONG_SELECT:
-        // 1 byte payload
-        buffer_set_expected_size(&ctx->buffer, 1);
-        ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
-        break;
-    case MIDI_STATUS_SYSTEM_RESET_OR_META:
-        // here feed meta event handler
-        ctx->state = MIDI_INPUT_STATE_SYSTEM_META;
-        break;
-    default:
-        break;
-    }
-}
+    ctx->event.message.raw = b;
 
-void handle_new_status(midi_input_device_t *ctx, const uint8_t b)
-{
-    switch (ctx->event_smf.message.status)
+    if (!ctx->event.message.new_msg)
     {
-    case MIDI_STATUS_NOTE_OFF:
-    case MIDI_STATUS_NOTE_ON:
-    case MIDI_STATUS_KEY_PRESSURE:
-    case MIDI_STATUS_CONTROLLER_CHANGE:
-    case MIDI_STATUS_PITCH_BEND:
-        buffer_set_expected_size(&ctx->buffer, 2);
-        ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
-        break;
-    case MIDI_STATUS_PROGRAM_CHANGE:
-    case MIDI_STATUS_CHANNEL_PRESSURE:
-        buffer_set_expected_size(&ctx->buffer, 1);
-        ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
-        break;
-    case MIDI_STATUS_SYSTEM:
-        handle_system_status(ctx, b);
-        break;
-    default:
-        break;
-    }
-}
-
-void handle_predelay(midi_input_device_t *ctx, const uint8_t b)
-{
-    if (vlv_feed(&ctx->vlv, b))
-    {
-        // if full switch to filling buffer
-        ctx->event_smf.predelay = vlv_get_value(&ctx->vlv);
-        ctx->state = MIDI_INPUT_STATE_NEW_MESSAGE;
-    }
-}
-
-void handle_new_message(midi_input_device_t *ctx, const uint8_t b)
-{
-    ctx->event_smf.message.raw = b;
-    if (!ctx->event_smf.message.new_msg)
-    {
-        ctx->event_smf.message.raw = 0x00;
+        ctx->event.message.raw = 0x00;
         if (ctx->listener->error)
         {
             ctx->listener->error(ctx->listener->handle, MIDI_ERROR_NOT_NEW_MESSAGE);
         }
         return;
     }
-    handle_new_status(ctx, b);
+
+    switch (ctx->event.message.status)
+    {
+        case MIDI_STATUS_NOTE_OFF:
+        case MIDI_STATUS_NOTE_ON:
+        case MIDI_STATUS_KEY_PRESSURE:
+        case MIDI_STATUS_CONTROLLER_CHANGE:
+        case MIDI_STATUS_PITCH_BEND:
+        {
+            buffer_set_expected_size(&ctx->buffer, 2);
+            ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
+            break;
+        }
+
+        case MIDI_STATUS_PROGRAM_CHANGE:
+        case MIDI_STATUS_CHANNEL_PRESSURE:
+        {
+            buffer_set_expected_size(&ctx->buffer, 1);
+            ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
+            break;
+        }
+
+        case MIDI_STATUS_SYSTEM:
+        {
+            handle_system(ctx, b);
+            // unmarshal_message_status_system(ctx, b);
+
+            break;
+        }
+
+        default:
+        {
+            break;
+        }
+    }
 }
 
-void handle_ready_to_new(midi_input_device_t *ctx, const uint8_t b)
+void handle_read_payload(midi_input_device_t* ctx, const uint8_t b)
 {
-    midi_event_smf_reset(&ctx->event_smf);
+    if (!ctx)
+    {
+        return;
+    }
+
+    buffer_append_u8(&ctx->buffer, b);
+
+    if (buffer_space_left(&ctx->buffer) == 0)
+    {
+        unmarshal_message_status(ctx);
+        ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
+        return;
+    }
+}
+
+void handle_ready_to_new(midi_input_device_t* ctx, const uint8_t b)
+{
+    if (!ctx)
+    {
+        return;
+    }
+
+    midi_event_reset(&ctx->event);
 
     if (ctx->smf)
     {
         ctx->state = MIDI_INPUT_STATE_PREDELAY;
         vlv_reset(&ctx->vlv);
         handle_predelay(ctx, b);
-        return;
     }
     else
     {
@@ -323,18 +696,82 @@ void handle_ready_to_new(midi_input_device_t *ctx, const uint8_t b)
     }
 }
 
-void handle_read_payload(midi_input_device_t *ctx, const uint8_t b)
+// -------------------------------------------------------------------
+
+void midi_input_device_reset(midi_input_device_t* ctx)
 {
-    buffer_append_u8(&ctx->buffer, b);
-    if (buffer_space_left(&ctx->buffer) == 0)
-    {
-        notify_watchers(ctx);
-        ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
-        return;
-    }
+    ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
+    ctx->event.message_meta = 0;
+    ctx->state_data.meta_length = 0;
+    midi_event_reset(&ctx->event);
+    buffer_reset(&ctx->buffer);
+    vlv_reset(&ctx->vlv);
 }
 
-void midi_input_device_feed(midi_input_device_t *ctx, const uint8_t b)
+midi_input_device_t* midi_input_device_new(const bool smf)
 {
+    midi_input_device_t* ctx = calloc(1, sizeof(midi_input_device_t));
+    if (!ctx)
+    {
+        return NULL;
+    }
+
+    init_handlers(ctx);
+    midi_input_device_reset(ctx);
+    ctx->smf = smf;
+
+    return ctx;
+}
+
+void midi_input_device_free(midi_input_device_t* ctx)
+{
+    if (!ctx)
+    {
+        return;
+    }
+
+    free(ctx);
+}
+
+void midi_input_device_set_listener(midi_input_device_t* ctx, midi_device_callback_data_t* listener)
+{
+    if (!ctx || !listener)
+    {
+        return;
+    }
+
+    ctx->listener = listener;
+}
+
+void midi_input_device_remove_listener(midi_input_device_t* ctx)
+{
+    if (!ctx)
+    {
+        return;
+    }
+
+    ctx->listener = NULL;
+}
+
+void midi_input_device_feed(midi_input_device_t* ctx, const uint8_t b)
+{
+    if (!ctx)
+    {
+        return;
+    }
+
     ctx->handlers.arr[ctx->state](ctx, b);
+}
+
+void midi_input_device_feed_chunk(midi_input_device_t* ctx, const uint8_t* data, const uint32_t size)
+{
+    if (!ctx)
+    {
+        return;
+    }
+
+    for (uint32_t i = 0; i < size; i++)
+    {
+        midi_input_device_feed(ctx, data[i]);
+    }
 }

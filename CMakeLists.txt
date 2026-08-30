@@ -1,29 +1,28 @@
-cmake_minimum_required(VERSION 3.15.2)
+cmake_minimum_required(VERSION 4.0.0)
 
 project(midi C)
 
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
-
 IF(MSVC)
+    message(STATUS "[libmidi] Platform: Windows")
     add_definitions(-DOS_WINDOWS)
     add_definitions(-DPLATFORM_X86_64)
     add_definitions(-D_USE_MATH_DEFINES)
 ELSEIF(APPLE)
+    message(STATUS "[libmidi] Platform: Apple")
     add_definitions(-DOS_OSX)
     add_definitions(-DPLATFORM_X86_64)
 ELSEIF(UNIX)
+    message(STATUS "[libmidi] Platform: Unix")
     add_definitions(-DOS_LINUX)
     add_definitions(-DPLATFORM_X86_64)
 ENDIF()
 
 IF(CMAKE_BUILD_TYPE MATCHES Debug)
-    message("Debug build.")
+    message(STATUS "[libmidi] Build type: Debug")
 ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
-    message("Release build.")
+    message(STATUS "[libmidi] Build type: Release")
 ELSE()
-    message(" ! ! ! Unknown build type.")
+    message(STATUS "[libmidi] Build type: Unknown type!!!")
 ENDIF()
 
 add_library(${PROJECT_NAME} STATIC)
@@ -34,6 +33,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 23
     CXX_STANDARD_REQUIRED ON
     LINKER_LANGUAGE C
+    CMAKE_COMPILE_WARNING_AS_ERROR ON
 )
 
 target_sources(${PROJECT_NAME}
@@ -43,21 +43,34 @@ target_sources(${PROJECT_NAME}
     src/event.c
     src/file.c
     src/midi_input_device.c
+    src/midi_output_device.c
     src/mthd.c
     src/mtrk.c
     src/util.c
     src/vlv.c
 
-    src/events/note.c
-    src/events/pitch.c
-    src/events/program_change.c
-    src/events/control.c
-    src/events/channel_pressure.c
-    src/events/key_pressure.c
+    src/event/standard/channel_pressure.c
+    src/event/standard/control.c
+    src/event/standard/key_pressure.c
+    src/event/standard/note.c
+    src/event/standard/pitch.c
+    src/event/standard/program_change.c
 
-    src/events/meta/tempo.c
-    src/events/meta/text.c
-    src/events/meta/time_signature.c
+    src/event/system/mtc_quarter_frame.c
+    src/event/system/song_position.c
+    src/event/system/song_select.c
+    src/event/system/sysex.c
+
+    src/event/meta/channel_prefix.c
+    src/event/meta/key_signature.c
+    src/event/meta/m_live_tag.c
+    src/event/meta/port.c
+    src/event/meta/proprietary.c
+    src/event/meta/sequence_number.c
+    src/event/meta/smpte_offset.c
+    src/event/meta/tempo.c
+    src/event/meta/text.c
+    src/event/meta/time_signature.c
 
     PUBLIC
     FILE_SET HEADERS
@@ -75,18 +88,33 @@ target_sources(${PROJECT_NAME}
     include/libmidi/mthd.h
     include/libmidi/file.h
     include/libmidi/midi_input_device.h
+    include/libmidi/midi_output_device.h
 
-    include/libmidi/events/note.h
-    include/libmidi/events/pitch.h
-    include/libmidi/events/program_change.h
-    include/libmidi/events/meta.h
-    include/libmidi/events/key_pressure.h
-    include/libmidi/events/control.h
-    include/libmidi/events/channel_pressure.h
+    include/libmidi/event/standard/note.h
+    include/libmidi/event/standard/pitch.h
+    include/libmidi/event/standard/program_change.h
+    include/libmidi/event/standard/key_pressure.h
+    include/libmidi/event/standard/control.h
+    include/libmidi/event/standard/channel_pressure.h
+    include/libmidi/event/standard/united.h
 
-    include/libmidi/events/meta/tempo.h
-    include/libmidi/events/meta/text.h
-    include/libmidi/events/meta/time_signature.h
+    include/libmidi/event/system/mtc_quarter_frame.h
+    include/libmidi/event/system/song_position.h
+    include/libmidi/event/system/song_select.h
+    include/libmidi/event/system/sysex.h
+    include/libmidi/event/system/united.h
+
+    include/libmidi/event/meta/channel_prefix.h
+    include/libmidi/event/meta/key_signature.h
+    include/libmidi/event/meta/m_live_tag.h
+    include/libmidi/event/meta/port.h
+    include/libmidi/event/meta/proprietary.h
+    include/libmidi/event/meta/sequence_number.h
+    include/libmidi/event/meta/smpte_offset.h
+    include/libmidi/event/meta/tempo.h
+    include/libmidi/event/meta/text.h
+    include/libmidi/event/meta/time_signature.h
+    include/libmidi/event/meta/united.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
@@ -95,14 +123,35 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 option(ENABLE_TESTING "Enable unit testing" OFF)
 
 if(ENABLE_TESTING)
+    message(STATUS "[libmidi] Building with unit-tests")
     enable_testing()
+    include(FetchContent)
+
+    # Declare the content to fetch (Google Test)
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG v1.17.x
+    )
+
+    FetchContent_MakeAvailable(googletest)
     add_subdirectory(tests)
 endif()
 
-if(CODE_COVERAGE)
+option(ENABLE_CODE_COVERAGE "Enable code coverage" OFF)
+
+if(ENABLE_CODE_COVERAGE)
+    message(STATUS "[libmidi] Building with code coverage")
     add_custom_target(coverage
         COMMAND ./my_tests
         COMMAND lcov --capture --directory . --output-file coverage.info
         COMMAND genhtml coverage.info --output-directory out
     )
+endif()
+
+option(ENABLE_TOOLS_BUILD "Enable tools build" OFF)
+
+if(ENABLE_TOOLS_BUILD)
+    message(STATUS "[libmidi] Building with tools")
+    add_subdirectory(tools)
 endif()

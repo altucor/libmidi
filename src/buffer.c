@@ -3,7 +3,7 @@
 #include <memory.h>
 #include <stdlib.h>
 
-void buffer_reset(buffer_t *ctx)
+void buffer_reset(buffer_t* ctx)
 {
     if (ctx == NULL)
     {
@@ -13,7 +13,7 @@ void buffer_reset(buffer_t *ctx)
     ctx->iterator_write = 0;
 }
 
-void buffer_set_expected_size(buffer_t *ctx, const uint32_t size)
+void buffer_set_expected_size(buffer_t* ctx, const uint32_t size)
 {
     if (ctx == NULL || size > BUFFER_SIZE)
     {
@@ -24,7 +24,7 @@ void buffer_set_expected_size(buffer_t *ctx, const uint32_t size)
     // TODO: Maybe overwrite with zero whole buffer
 }
 
-uint32_t buffer_space_left(buffer_t *ctx)
+uint32_t buffer_space_left(buffer_t* ctx)
 {
     if (ctx == NULL)
     {
@@ -33,7 +33,7 @@ uint32_t buffer_space_left(buffer_t *ctx)
     return ctx->expected_size - ctx->iterator_write;
 }
 
-void buffer_append_u8(buffer_t *ctx, const uint8_t b)
+void buffer_append_u8(buffer_t* ctx, const uint8_t b)
 {
     if (ctx == NULL || ctx->iterator_write >= ctx->expected_size)
     {
