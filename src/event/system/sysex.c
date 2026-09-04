@@ -29,16 +29,22 @@ int midi_sysex_unmarshal(midi_sysex_t* ctx, const uint8_t* data, const uint32_t 
 
     midi_sysex_clean(ctx);
 
-    ctx->data = malloc(size);
+    int ret = midi_vendor_unmarshal(&ctx->vendor, data, size);
+    if (ret < 0)
+    {
+        return ret;
+    }
+
+    ctx->data = malloc(size - ret);
     if (!ctx->data)
     {
         return MIDI_ERROR_GENERAL;
     }
 
-    ctx->size = size;
+    ctx->size = size - ret;
     memcpy(ctx->data, data, ctx->size);
     // First byte in SysEx event should be manufacturer id
-    ctx->vendor = data[0];
+    // ctx->vendor = data[0];
 
     return size;
 }

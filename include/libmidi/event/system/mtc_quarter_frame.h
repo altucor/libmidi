@@ -6,6 +6,7 @@
 #include "libmidi/event/meta/smpte_offset.h"
 
 #include <stdint.h>
+#include <assert.h>
 
 // nibble - 4 bits of data
 // LSN - Least significant nibble
@@ -30,10 +31,12 @@ typedef union _mtc_u
     struct
     {
         uint8_t data : 4;
-        mtc_piece_e piece : 3;
+        uint8_t piece : 3; // actually "mtc_piece_e"
         uint8_t ____reserved : 1;
     };
 } mtc_u;
+
+static_assert(sizeof(uint8_t) == sizeof(mtc_u), "Invalid size of \"mtc_u\"");
 
 typedef struct _midi_mtc_quarter_frame_t
 {

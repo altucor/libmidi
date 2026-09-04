@@ -101,6 +101,7 @@ target_sources(${PROJECT_NAME}
     include/libmidi/event/system/mtc_quarter_frame.h
     include/libmidi/event/system/song_position.h
     include/libmidi/event/system/song_select.h
+    include/libmidi/event/system/vendor.h
     include/libmidi/event/system/sysex.h
     include/libmidi/event/system/united.h
 
