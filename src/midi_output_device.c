@@ -91,8 +91,15 @@ static int handle_system(const midi_event_t* event, uint8_t* buffer, const uint3
 
         case MIDI_STATUS_SYSTEM_COMMON_MTC_QUARTER_FRAME:
         {
+            // 0xF1 message
+            midi_cmd_t temp = {0};
+            temp.new_msg = true;
+            temp.status = MIDI_STATUS_SYSTEM;
+            temp.system = MIDI_STATUS_SYSTEM_COMMON_MTC_QUARTER_FRAME;
+            buffer[iterator++] = temp.raw;
+
             memcpy(buffer + iterator, &event->system.mtc_quarter_frame, sizeof(event->system.mtc_quarter_frame.value));
-            iterator += event->system.sysex.size;
+            iterator += sizeof(event->system.mtc_quarter_frame.value);
             break;
         }
 
@@ -141,7 +148,12 @@ static int handle_system(const midi_event_t* event, uint8_t* buffer, const uint3
         }
     }
 
-    return ret;
+    if (ret < 0)
+    {
+        return ret;
+    }
+
+    return iterator;
 }
 
 static int handle_standard(const midi_event_t* event, uint8_t* buffer, const uint32_t size)

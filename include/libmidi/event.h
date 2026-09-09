@@ -36,6 +36,55 @@ void midi_event_copy(midi_event_t* dst, const midi_event_t* src);
 void midi_event_cleanup(midi_event_t* ctx);
 void midi_event_free(midi_event_t* ctx);
 
+static inline bool midi_event_is_standard(const midi_event_t* ctx)
+{
+    return ctx->message.status >= MIDI_STATUS_NOTE_OFF && ctx->message.status <= MIDI_STATUS_PITCH_BEND;
+}
+
+static inline bool midi_event_is_system(const midi_event_t* ctx)
+{
+    return !midi_event_is_standard(ctx);
+}
+
+static inline bool midi_event_is_meta(const midi_event_t* ctx)
+{
+    if (midi_event_is_standard(ctx))
+    {
+        return false;
+    }
+
+    switch (ctx->message_meta)
+    {
+        case MIDI_META_EVENT_SEQUENCE_NUMBER:
+        case MIDI_META_EVENT_TEXT:
+        case MIDI_META_EVENT_COPYRIGHT:
+        case MIDI_META_EVENT_TRACK_NAME:
+        case MIDI_META_EVENT_INSTRUMENT_NAME:
+        case MIDI_META_EVENT_LYRIC_TEXT:
+        case MIDI_META_EVENT_TEXT_MARKER:
+        case MIDI_META_EVENT_CUE_POINT:
+        case MIDI_META_EVENT_PROGRAM_PATCH_NAME:
+        case MIDI_META_EVENT_DEVICE_PORT_NAME:
+        case MIDI_META_EVENT_MIDI_CHANNEL_PREFIX:
+        case MIDI_META_EVENT_MIDI_PORT:
+        case MIDI_META_EVENT_TRACK_END:
+        case MIDI_META_EVENT_M_LIVE_TAG:
+        case MIDI_META_EVENT_TEMPO:
+        case MIDI_META_EVENT_SMPTE_OFFSET:
+        case MIDI_META_EVENT_TIME_SIGNATURE:
+        case MIDI_META_EVENT_KEY_SIGNATURE:
+        case MIDI_META_EVENT_PROPRIETARY_EVENT:
+        {
+            return true;
+        }
+
+        default:
+        {
+            return false;
+        }
+    }
+}
+
 #ifdef __cplusplus
 }
 #endif

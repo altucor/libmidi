@@ -23,6 +23,7 @@ typedef enum _mtc_piece_e
     MTC_PIECE_MINUTES_MSN,
     MTC_PIECE_HOURS_LSN,
     MTC_PIECE_HOURS_MSN,
+    MTC_PIECE_MAX
 } mtc_piece_e;
 
 typedef union _mtc_u
