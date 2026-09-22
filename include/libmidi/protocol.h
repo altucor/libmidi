@@ -210,4 +210,18 @@ static_assert(sizeof(midi_meta_event_e) == 1, "MIDI: midi_meta_event_e Invalid b
 
 static_assert(sizeof(midi_cmd_t) == 1, "MIDI: midi_cmd_t Invalid bit alignment");
 
+typedef union _midi_byte_t
+{
+    // Raw
+    uint8_t raw;
+
+    struct
+    {
+        uint8_t data : 7;
+        bool msb : 1;
+    };
+} midi_byte_t;
+
+static_assert(sizeof(midi_byte_t) == 1, "MIDI: midi_byte_t Invalid bit alignment");
+
 #endif // MIDI_PROTOCOL_H

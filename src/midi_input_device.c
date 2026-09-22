@@ -1,4 +1,7 @@
 #include "libmidi/midi_input_device.h"
+#include "libmidi/event/system/vendor.h"
+#include "libmidi/protocol.h"
+#include "libmidi/util.h"
 
 #include <stdlib.h>
 
@@ -8,8 +11,7 @@ void handle_new_message(midi_input_device_t* ctx, const uint8_t b);
 void handle_read_payload(midi_input_device_t* ctx, const uint8_t b);
 void handle_system_meta_event(midi_input_device_t* ctx, const uint8_t b);
 void handle_system_meta_event_payload_size(midi_input_device_t* ctx, const uint8_t b);
-void handle_sysex_payload_size(midi_input_device_t* ctx, const uint8_t b);
-void handle_sysex_payload_live(midi_input_device_t* ctx, const uint8_t b);
+void handle_sysex(midi_input_device_t* ctx, const uint8_t b);
 
 void init_handlers(midi_input_device_t* ctx)
 {
@@ -20,10 +22,7 @@ void init_handlers(midi_input_device_t* ctx)
     ctx->handlers.arr[MIDI_INPUT_STATE_SYSTEM_META] = (midi_cb_input_state_handler_f*)&handle_system_meta_event;
     ctx->handlers.arr[MIDI_INPUT_STATE_READ_META_PAYLOAD_SIZE] =
         (midi_cb_input_state_handler_f*)&handle_system_meta_event_payload_size;
-    ctx->handlers.arr[MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_SIZE] =
-        (midi_cb_input_state_handler_f*)&handle_sysex_payload_size;
-    ctx->handlers.arr[MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_LIVE] =
-        (midi_cb_input_state_handler_f*)&handle_sysex_payload_live;
+    ctx->handlers.arr[MIDI_INPUT_STATE_READ_SYSEX] = (midi_cb_input_state_handler_f*)&handle_sysex;
 }
 
 void unmarshal_message_status_system_meta(midi_input_device_t* ctx)
@@ -160,7 +159,7 @@ void unmarshal_message_status_system(midi_input_device_t* ctx)
         {
             // System Exclusive (data dump) 2nd byte= Vendor ID followed by more data bytes and ending with EOX (0xF7).
 
-            ret = midi_sysex_unmarshal(&ctx->event.system.sysex, ctx->buffer.data, ctx->buffer.expected_size);
+            // ret = midi_sysex_unmarshal(&ctx->event.system.sysex, ctx->buffer.data, ctx->buffer.expected_size);
 
             break;
         }
@@ -220,7 +219,7 @@ void unmarshal_message_status_system(midi_input_device_t* ctx)
             }
             else
             {
-                ret = midi_sysex_unmarshal(&ctx->event.system.sysex, ctx->buffer.data, ctx->buffer.iterator_write);
+                // ret = midi_sysex_unmarshal(&ctx->event.system.sysex, ctx->buffer.data, ctx->buffer.iterator_write);
 
                 ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
                 vlv_reset(&ctx->vlv);
@@ -450,48 +449,56 @@ void handle_predelay(midi_input_device_t* ctx, const uint8_t b)
     ctx->state = MIDI_INPUT_STATE_NEW_MESSAGE;
 }
 
-void handle_sysex_payload_size(midi_input_device_t* ctx, const uint8_t b)
+void handle_sysex(midi_input_device_t* ctx, const uint8_t b)
 {
     if (!ctx)
     {
         return;
     }
 
-    if (!vlv_feed(&ctx->vlv, b))
+    midi_sysex_set(&ctx->event.system.sysex, b);
+
+    if (ctx->listener && ctx->listener->event)
     {
-        return;
+        ctx->listener->event(ctx->listener->handle, &ctx->event);
     }
+
+    const midi_cmd_t view = {.raw = b};
+    if (view.new_msg && view.status == MIDI_STATUS_SYSTEM && view.system == MIDI_STATUS_SYSTEM_COMMON_SYSEX_END)
+    {
+        ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
+    }
+
+    // if (GENERIC_STATE_ERROR_OK != midi_vendor_feed(&ctx->event.system.sysex.vendor, &ctx->state_data.generic_state,
+    // b))
+    // {
+    //     return;
+    // }
+
+    // if (!vlv_feed(&ctx->vlv, b))
+    // {
+    //     return;
+    // }
 
     // if vlv full switch to filling buffer with midi bytes
-    ctx->state_data.sysex_length = vlv_get_value(&ctx->vlv);
-    if (ctx->state_data.sysex_length != 0)
+    // ctx->state_data.sysex_length = vlv_get_value(&ctx->vlv);
+    // if (ctx->state_data.sysex_length != 0)
     {
-        buffer_set_expected_size(&ctx->buffer, ctx->state_data.sysex_length);
-        ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
-        return;
+        // buffer_set_expected_size(&ctx->buffer, ctx->state_data.sysex_length);
+        // ctx->state = MIDI_INPUT_STATE_READ_PAYLOAD;
+        // return;
     }
 
-    unmarshal_message_status(ctx);
-    ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
-}
-
-void handle_sysex_payload_live(midi_input_device_t* ctx, const uint8_t b)
-{
-    if (!ctx)
-    {
-        return;
-    }
-
-    buffer_append_u8(&ctx->buffer, b);
+    // buffer_append_u8(&ctx->buffer, b);
 
     static const midi_cmd_t k_sysex_end = {
         .new_msg = true, .status = MIDI_STATUS_SYSTEM, .system = MIDI_STATUS_SYSTEM_COMMON_SYSEX_END};
 
     if (b == k_sysex_end.raw)
     {
-        ctx->event.message.raw = b;
+        // ctx->event.message.raw = b;
 
-        unmarshal_message_status(ctx);
+        // unmarshal_message_status(ctx);
 
         // const int ret = midi_sysex_unmarshal(&ctx->event.system.sysex, ctx->buffer.data, ctx->buffer.expected_size);
         // if (ret < 0 && ctx->listener && ctx->listener->error)
@@ -503,6 +510,9 @@ void handle_sysex_payload_live(midi_input_device_t* ctx, const uint8_t b)
         // vlv_reset(&ctx->vlv);
         // buffer_reset(&ctx->buffer);
     }
+
+    // unmarshal_message_status(ctx);
+    // ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
 }
 
 void handle_system(midi_input_device_t* ctx, const uint8_t b)
@@ -516,18 +526,16 @@ void handle_system(midi_input_device_t* ctx, const uint8_t b)
     {
         case MIDI_STATUS_SYSTEM_COMMON_SYSEX_START:
         {
-            ctx->state_data.sysex_length = 0;
             vlv_reset(&ctx->vlv);
             buffer_reset(&ctx->buffer);
+            // midi_vendor_reset(&ctx->event.system.sysex.vendor);
+            generic_state_reset(&ctx->state_data.generic_state);
+            midi_sysex_set(&ctx->event.system.sysex, b);
+            ctx->state = MIDI_INPUT_STATE_READ_SYSEX;
 
-            if (ctx->smf)
+            if (ctx->listener && ctx->listener->event)
             {
-                ctx->state = MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_SIZE;
-            }
-            else
-            {
-                buffer_set_expected_size(&ctx->buffer, BUFFER_SIZE);
-                ctx->state = MIDI_INPUT_STATE_READ_SYSEX_PAYLOAD_LIVE;
+                ctx->listener->event(ctx->listener->handle, &ctx->event);
             }
 
             break;
@@ -549,7 +557,6 @@ void handle_system(midi_input_device_t* ctx, const uint8_t b)
         }
 
         case MIDI_STATUS_SYSTEM_COMMON_RESERVED_4:
-        case MIDI_STATUS_SYSTEM_COMMON_SYSEX_END:
         case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_9:
         case MIDI_STATUS_SYSTEM_REALTIME_RESERVED_13:
         {
@@ -559,6 +566,20 @@ void handle_system(midi_input_device_t* ctx, const uint8_t b)
         case MIDI_STATUS_SYSTEM_COMMON_UNOFFICIAL_BUS_SELECT:
         {
             break;
+        }
+
+        case MIDI_STATUS_SYSTEM_COMMON_SYSEX_END:
+        {
+            vlv_reset(&ctx->vlv);
+            buffer_reset(&ctx->buffer);
+            // midi_vendor_reset(&ctx->event.system.sysex.vendor);
+            generic_state_reset(&ctx->state_data.generic_state);
+            ctx->state = MIDI_INPUT_STATE_READY_TO_NEW;
+
+            if (ctx->listener && ctx->listener->event)
+            {
+                ctx->listener->event(ctx->listener->handle, &ctx->event);
+            }
         }
 
         case MIDI_STATUS_SYSTEM_COMMON_TUNE_REQUEST:
@@ -646,7 +667,6 @@ void handle_new_message(midi_input_device_t* ctx, const uint8_t b)
         case MIDI_STATUS_SYSTEM:
         {
             handle_system(ctx, b);
-            // unmarshal_message_status_system(ctx, b);
 
             break;
         }

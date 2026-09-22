@@ -4,47 +4,47 @@
 #include <memory.h>
 #include <stdlib.h>
 
-void midi_sysex_clean(midi_sysex_t* ctx)
-{
-    if (!ctx)
-    {
-        return;
-    }
+// void midi_sysex_clean(midi_sysex_t* ctx)
+// {
+//     if (!ctx)
+//     {
+//         return;
+//     }
 
-    ctx->size = 0;
+//     ctx->size = 0;
 
-    if (ctx->data)
-    {
-        free(ctx->data);
-        ctx->data = NULL;
-    }
-}
+//     if (ctx->data)
+//     {
+//         free(ctx->data);
+//         ctx->data = NULL;
+//     }
+// }
 
-int midi_sysex_unmarshal(midi_sysex_t* ctx, const uint8_t* data, const uint32_t size)
-{
-    if (!ctx || !data || !size)
-    {
-        return MIDI_ERROR_GENERAL;
-    }
+// int midi_sysex_unmarshal(midi_sysex_t* ctx, const uint8_t* data, const uint32_t size)
+// {
+//     if (!ctx || !data || !size)
+//     {
+//         return MIDI_ERROR_GENERAL;
+//     }
 
-    midi_sysex_clean(ctx);
+//     midi_sysex_clean(ctx);
 
-    int ret = midi_vendor_unmarshal(&ctx->vendor, data, size);
-    if (ret < 0)
-    {
-        return ret;
-    }
+//     int ret = midi_vendor_unmarshal(&ctx->vendor, data, size);
+//     if (ret < 0)
+//     {
+//         return ret;
+//     }
 
-    ctx->data = malloc(size - ret);
-    if (!ctx->data)
-    {
-        return MIDI_ERROR_GENERAL;
-    }
+//     ctx->data = malloc(size - ret);
+//     if (!ctx->data)
+//     {
+//         return MIDI_ERROR_GENERAL;
+//     }
 
-    ctx->size = size - ret;
-    memcpy(ctx->data, data, ctx->size);
-    // First byte in SysEx event should be manufacturer id
-    // ctx->vendor = data[0];
+//     ctx->size = size - ret;
+//     memcpy(ctx->data, data, ctx->size);
+//     // First byte in SysEx event should be manufacturer id
+//     // ctx->vendor = data[0];
 
-    return size;
-}
+//     return size;
+// }

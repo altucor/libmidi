@@ -98,6 +98,19 @@ void midi_event_copy(midi_event_t* dst, const midi_event_t* src)
     }
 }
 
+midi_event_t* midi_event_new_copy_from(const midi_event_t* orig)
+{
+    midi_event_t* temp = midi_event_new();
+    if (!temp)
+    {
+        return NULL;
+    }
+
+    midi_event_copy(temp, orig);
+
+    return temp;
+}
+
 void midi_event_cleanup(midi_event_t* ctx)
 {
     if (!ctx)

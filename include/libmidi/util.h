@@ -10,6 +10,36 @@ typedef struct _view_buffer
     uint32_t size;
 } view_buffer_t;
 
+typedef enum _generic_state_error_e
+{
+    GENERIC_STATE_ERROR_OK = 0,
+    GENERIC_STATE_ERROR_NEED_MORE,
+    GENERIC_STATE_ERROR_BAD_INPUT,
+} generic_state_error_e;
+
+typedef enum _generic_state_name_e
+{
+    GENERIC_STATE_INIT = 0,
+    GENERIC_STATE_PROCESSING,
+    GENERIC_STATE_COMPLETE,
+    GENERIC_STATE_ERROR,
+    GENERIC_STATE_COUNT
+} generic_state_name_e;
+
+typedef struct _generic_state_t
+{
+    generic_state_name_e state;
+    uint32_t counter;
+    uint32_t counter_max;
+} generic_state_t;
+
+static inline void generic_state_reset(generic_state_t* ctx)
+{
+    ctx->state = GENERIC_STATE_INIT;
+    ctx->counter = 0;
+    ctx->counter_max = 0;
+}
+
 #ifdef __cplusplus
 extern "C"
 {

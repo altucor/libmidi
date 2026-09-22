@@ -80,11 +80,11 @@ static int handle_system(const midi_event_t* event, uint8_t* buffer, const uint3
     {
         case MIDI_STATUS_SYSTEM_COMMON_SYSEX_START:
         {
-            memcpy(buffer + iterator, &event->system.sysex.vendor, sizeof(event->system.sysex.vendor));
-            iterator += sizeof(event->system.sysex.vendor);
+            // memcpy(buffer + iterator, &event->system.sysex.vendor, sizeof(event->system.sysex.vendor));
+            // iterator += sizeof(event->system.sysex.vendor);
 
-            memcpy(buffer + iterator, event->system.sysex.data, event->system.sysex.size);
-            iterator += event->system.sysex.size;
+            // memcpy(buffer + iterator, event->system.sysex.data, event->system.sysex.size);
+            // iterator += event->system.sysex.size;
 
             break;
         }
