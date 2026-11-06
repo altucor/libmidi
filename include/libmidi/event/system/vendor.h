@@ -80,7 +80,11 @@ static inline generic_state_error_e midi_vendor_feed(midi_vendor_t* ctx, generic
     {
         case GENERIC_STATE_INIT:
         {
-            if (b != 0)
+            if (b == 0xF0)
+            {
+                return GENERIC_STATE_ERROR_NEED_MORE;
+            }
+            else if (b != 0)
             {
                 ctx->arr[state->counter] = b;
                 state->state = GENERIC_STATE_COMPLETE;

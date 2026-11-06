@@ -1,12 +1,11 @@
-#ifndef CONTAINER_H
-#define CONTAINER_H
+#ifndef SYSEX_ROUTER_H
+#define SYSEX_ROUTER_H
 
 #include "libmidi/event/system/vendor.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/types.h>
 
-// return entry->handler(entry->context, b);
 typedef int(sysex_handler_cb_f)(void*, const uint8_t);
 
 typedef struct _sysex_route_entry_t
@@ -83,12 +82,14 @@ int sysex_router_add(sysex_router_t* ctx, const sysex_route_entry_t entry)
     const uint32_t index = lower_bound(ctx, entry.vendor);
     ctx->routes[index] = entry;
     ctx->count++;
+
+    return 0;
 }
 
-const sysex_route_entry_t* sysex_router_find(const sysex_router_t* ctx, const midi_vendor_t vendor)
+sysex_route_entry_t* sysex_router_find(sysex_router_t* ctx, const midi_vendor_t vendor)
 {
     uint32_t i = lower_bound(ctx, vendor);
-    if (i < ctx->count && ctx->routes[i].vendor_id == vendor.raw)
+    if (i < ctx->count && ctx->routes[i].vendor.raw == vendor.raw)
     {
         return &ctx->routes[i];
     }
@@ -107,4 +108,4 @@ int sysex_router_handle(sysex_router_t* ctx, const midi_vendor_t vendor, const u
     return entry->handler(entry->context, b);
 }
 
-#endif // CONTAINER_H
+#endif // SYSEX_ROUTER_H

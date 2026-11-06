@@ -122,6 +122,7 @@ typedef enum _sysex_vendor_id_e
     /* NOTE: The midi.org table only lists 60H-7FH as reserved. 7DH/7EH/7FH below come from the MIDI 1.0 spec, not the
        table. */
     SYSEX_ID_NON_COMMERCIAL = 0x7D,         /* 7D: Non-commercial / educational use */
+    SYSEX_ID_EDUCATIONAL = 0x7D,            /* 7D: Non-commercial / educational use */
     SYSEX_ID_UNIVERSAL_NON_REALTIME = 0x7E, /* 7E: Universal Non-Real Time */
     SYSEX_ID_UNIVERSAL_REALTIME = 0x7F,     /* 7F: Universal Real Time */
 
